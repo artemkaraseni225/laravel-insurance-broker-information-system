@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Document;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -36,5 +37,16 @@ class DocumentController extends Controller
             'message' => 'Документ успешно загружен',
             'document' => $document,
         ], 201);
+    }
+
+      public function show(Document $document)
+    {
+        Gate::authorize('view', $document);
+
+        if (! Storage::disk('local')->exists($document->file_path)) {
+            abort(404, 'Файл не найден');
+        }
+
+        return Storage::disk('local')->response($document->file_path, $document->file_name);
     }
 }

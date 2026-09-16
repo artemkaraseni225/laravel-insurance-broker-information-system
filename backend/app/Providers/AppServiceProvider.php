@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Application;
+use App\Models\Document;
 use App\Models\User;
 use App\Policies\ApplicationPolicy;
+use App\Policies\DocumentPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -18,15 +20,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Gates — быстрая проверка "какая у пользователя роль",
-        // без привязки к конкретной записи
         Gate::define('is-admin', fn ($user) => $user->role?->name === 'admin');
         Gate::define('is-broker', fn ($user) => $user->role?->name === 'broker');
         Gate::define('is-customer', fn ($user) => $user->role?->name === 'customer');
 
-        // Policy — привязана к конкретной записи. Когда появятся Application/Document — добавим
-        // ApplicationPolicy/DocumentPolicy по тому же принципу.
+        // Policy — привязана к конкретной записи. 
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
+        Gate::policy(Document::class, DocumentPolicy::class);
     }
 }

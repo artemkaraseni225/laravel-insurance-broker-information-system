@@ -7,67 +7,29 @@ use App\Models\User;
 
 class ApplicationPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Application $application): bool
     {
-        return $user->customer?->id === $application->customer_id;
+        return $this->owns($user, $application) || $user->role?->name === 'admin';
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can upload a document to the application.
-     */
     public function uploadDocument(User $user, Application $application): bool
     {
-        return $user->customer?->id === $application->customer_id;
+        return $this->owns($user, $application);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Application $application): bool
+    private function owns(User $user, Application $application): bool
     {
-        return false;
-    }
+        if ($user->customer && $application->customer_id === $user->customer->id) {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Application $application): bool
-    {
-        return false;
-    }
+        if ($user->broker) {
+            // Брокер видит СВОИ назначенные заявки И общий пул
+            // неназначенных (broker_id ещё null) — назначение
+            // происходит в момент решения (approve/reject), не раньше
+            return $application->broker_id === $user->broker->id || $application->broker_id === null;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Application $application): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Application $application): bool
-    {
         return false;
     }
 }

@@ -39,7 +39,7 @@ class ApplicationController extends Controller
     {
         Gate::authorize('view', $application);
 
-        $application->load(['insuranceType', 'tariff.company', 'documents', 'statusHistories']);
+        $application->load(['customer.user','insuranceType', 'tariff.company', 'documents', 'statusHistories']);
 
         return response()->json([
             'application' => new ApplicationResource($application),

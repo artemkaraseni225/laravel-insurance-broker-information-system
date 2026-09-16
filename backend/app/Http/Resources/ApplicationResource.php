@@ -14,6 +14,14 @@ class ApplicationResource extends JsonResource
             'status' => $this->status,
             'calculated_price' => $this->calculated_price,
             'insurance_data' => $this->insurance_data,
+            // Нужно брокеру, чтобы понимать, чья это заявка —
+            // для клиента, смотрящего свою же заявку, тоже безвредно
+            'customer' => $this->whenLoaded('customer', fn () => [
+                'id' => $this->customer->id,
+                'name' => $this->customer->user?->name,
+                'email' => $this->customer->user?->email,
+                'phone' => $this->customer->phone,
+            ]),
             'insurance_type' => $this->whenLoaded('insuranceType', fn () => [
                 'code' => $this->insuranceType->code,
                 'name' => $this->insuranceType->name,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BrokerApplicationController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
@@ -32,6 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin')->get('/admin/ping', function () {
         return response()->json(['message' => 'ok, ты администратор']);
     });
+
+    Route::get('/broker/applications', [BrokerApplicationController::class, 'index']);
+    Route::get('/documents/{document}', [DocumentController::class, 'show']);
 
     
 });
