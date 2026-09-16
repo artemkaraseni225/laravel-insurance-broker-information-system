@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const STATUS_LABELS = {
   new: 'Новая',
@@ -26,11 +32,40 @@ const OPTION_LABELS = {
   sports_addon: 'Экстремальные виды спорта',
 };
 
-function ApplicationDetail() {
+function ApplicationDetail({ backPath = '/my-applications' }) {
   const { id } = useParams();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [documentViewer, setDocumentViewer] = useState(null);
+  const [documentLoading, setDocumentLoading] = useState(false);
+
+  async function openDocument(document) {
+    setError(null);
+    setDocumentLoading(true);
+
+    try {
+      const response = await api.get(`/documents/${document.id}`, { responseType: 'blob' });
+      const documentUrl = URL.createObjectURL(response.data);
+      setDocumentViewer({
+        name: document.file_name,
+        url: documentUrl,
+      });
+    } catch {
+      setError('Не удалось открыть документ');
+    } finally {
+      setDocumentLoading(false);
+    }
+  }
+
+  function closeDocument() {
+    setDocumentViewer((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.url);
+      }
+      return null;
+    });
+  }
 
   useEffect(() => {
     api
@@ -56,7 +91,7 @@ function ApplicationDetail() {
     return (
       <div className="p-6 text-center">
         <p className="text-destructive">{error}</p>
-        <Link to="/my-applications" className="text-sm underline">
+        <Link to={backPath} className="text-sm underline">
           ← Назад к списку
         </Link>
       </div>
@@ -73,7 +108,7 @@ function ApplicationDetail() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
-      <Link to="/my-applications" className="text-sm underline">
+      <Link to={backPath} className="text-sm underline">
         ← Назад к списку
       </Link>
 
@@ -120,11 +155,20 @@ function ApplicationDetail() {
 
           <div>
             <h3 className="mb-2 font-medium">Документы</h3>
+            {documentLoading && (
+              <p className="mb-2 text-sm text-muted-foreground">Открытие документа...</p>
+            )}
             {application.documents?.length > 0 ? (
               <ul className="space-y-1 text-sm">
                 {application.documents.map((doc) => (
                   <li key={doc.id} className="flex justify-between">
-                    <span>{doc.file_name}</span>
+                    <button
+                      type="button"
+                      className="text-left underline underline-offset-4 hover:text-foreground"
+                      onClick={() => openDocument(doc)}
+                    >
+                      {doc.file_name}
+                    </button>
                     <span className="text-muted-foreground">
                       {new Date(doc.created_at).toLocaleDateString('ru-RU')}
                     </span>
@@ -135,6 +179,26 @@ function ApplicationDetail() {
               <p className="text-sm text-muted-foreground">Документов нет.</p>
             )}
           </div>
+
+          <Dialog
+            open={Boolean(documentViewer)}
+            onOpenChange={(open) => {
+              if (!open) closeDocument();
+            }}
+          >
+            <DialogContent className="h-[85vh] max-w-5xl">
+              <DialogHeader>
+                <DialogTitle>{documentViewer?.name}</DialogTitle>
+              </DialogHeader>
+              {documentViewer && (
+                <iframe
+                  src={documentViewer.url}
+                  title={documentViewer.name}
+                  className="h-full min-h-0 w-full rounded-md border"
+                />
+              )}
+            </DialogContent>
+          </Dialog>
 
           <div>
             <h3 className="mb-2 font-medium">История изменений</h3>

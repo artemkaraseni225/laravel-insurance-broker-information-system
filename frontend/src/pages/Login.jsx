@@ -31,7 +31,7 @@ function Login() {
     try {
       const data = await login(form);
       localStorage.setItem('auth_token', data.token);
-      navigate('/');
+      navigate(data.user?.role?.name === 'broker' ? '/broker/dashboard' : '/');
     } catch (err) {
       setError('Неверный email или пароль');
     } finally {
