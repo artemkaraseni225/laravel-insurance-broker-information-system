@@ -1,71 +1,77 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '../services/api';
 
 export default function PolicyDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
 
-    // В будущем эти данные будут приходить из Laravel API
-    const policy = {
-        id: id || "1",
-        policyNumber: "POL-2026-000124",
-        status: "active",
+    const [policy, setPolicy] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-        insuranceType: "ОСАГО",
+    useEffect(() => {
+        api
+            .get(`/policies/${id}`)
+            .then(({ data }) => {
+                const currentPolicy = data.policy;
+                const insuranceData = currentPolicy.application?.insurance_data ?? {};
 
-        // Страхователь
-        customer: {
-            fullName: "Иван Петров",
-            email: "ivan.petrov@example.com",
-            phone: "+373 69 123 456",
-            address: "ул. Штефан чел Маре, 125, Кишинёв",
-        },
-
-        // Страховая компания
-        insurer: {
-            name: "Moldova Insurance",
-            registrationNumber: "1003600001234",
-        },
-
-        // Застрахованный объект
-        insuredObject: {
-            type: "Автомобиль",
-            make: "Ford",
-            model: "Focus",
-            year: "2014",
-            registrationNumber: "K 123 ABC",
-            vin: "WF0XXXGCDXEU12345",
-        },
-
-        // Финансовая информация
-        financial: {
-            premium: 1850,
-            currency: "MDL",
-            insuranceAmount: 100000,
-            paidAmount: 1850,
-        },
-
-        // Срок действия
-        period: {
-            start: "17.09.2026",
-            end: "16.09.2027",
-        },
-
-        // Дополнительная информация
-        createdAt: "17.09.2026",
-        issuedAt: "17.09.2026",
-        broker: "Александр Попеску",
-
-        payment: {
-            status: "paid",
-            method: "Банковская карта",
-            date: "17.09.2026",
-            transactionId: "TXN-20260917-00124",
-        },
-    };
+                setPolicy({
+                    id: currentPolicy.id,
+                    policyNumber: currentPolicy.policy_number,
+                    status: currentPolicy.status,
+                    insuranceType: currentPolicy.application?.insurance_type?.name ?? '—',
+                    customer: {
+                        fullName: currentPolicy.application?.customer?.name ?? '—',
+                        email: currentPolicy.application?.customer?.email ?? '—',
+                        phone: currentPolicy.application?.customer?.phone ?? '—',
+                        address: currentPolicy.application?.customer?.address ?? '—',
+                    },
+                    insurer: {
+                        name: currentPolicy.application?.tariff?.company?.name ?? '—',
+                        registrationNumber: '—',
+                    },
+                    insuredObject: {
+                        type: '—',
+                        make: insuranceData.make ?? '—',
+                        model: insuranceData.model ?? '—',
+                        year: insuranceData.year ?? '—',
+                        registrationNumber: insuranceData.registration_number ?? '—',
+                        vin: insuranceData.vin ?? '—',
+                    },
+                    financial: {
+                        premium: currentPolicy.premium,
+                        currency: 'MDL',
+                        insuranceAmount: insuranceData.insurance_amount ?? '—',
+                        paidAmount: currentPolicy.premium,
+                    },
+                    period: {
+                        start: currentPolicy.start_date ?? '—',
+                        end: currentPolicy.end_date ?? '—',
+                    },
+                    createdAt: '—',
+                    issuedAt: '—',
+                    broker: '—',
+                    payment: {
+                        status: currentPolicy.payment?.status ?? 'paid',
+                        method: currentPolicy.payment?.method ?? '—',
+                        date: currentPolicy.payment?.paid_at ?? '—',
+                        transactionId: currentPolicy.payment?.transaction_id ?? '—',
+                    },
+                });
+            })
+            .catch(() => setError('Не удалось загрузить полис'))
+            .finally(() => setLoading(false));
+    }, [id]);
 
     const statusConfig = {
         active: {
             label: "Действует",
+            className: "bg-green-100 text-green-700",
+        },
+        paid: {
+            label: "Оплачен",
             className: "bg-green-100 text-green-700",
         },
         expired: {
@@ -78,7 +84,22 @@ export default function PolicyDetail() {
         },
     };
 
-    const status = statusConfig[policy.status];
+    if (loading) {
+        return <p className="p-6 text-center text-gray-500">Загрузка полиса...</p>;
+    }
+
+    if (error || !policy) {
+        return (
+            <div className="p-6 text-center">
+                <p className="text-red-500">{error ?? 'Полис не найден'}</p>
+                <button type="button" onClick={() => navigate('/my-policies')} className="mt-4 underline">
+                    Назад к полисам
+                </button>
+            </div>
+        );
+    }
+
+    const status = statusConfig[policy.status] ?? statusConfig.paid;
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -88,7 +109,7 @@ export default function PolicyDetail() {
                 <div className="mb-6 flex items-center justify-between">
                     <div>
                         <button
-                            onClick={() => navigate("/policies")}
+                            onClick={() => navigate("/my-policies")}
                             className="mb-3 text-sm text-gray-500 hover:text-gray-800"
                         >
                             ← Назад к полисам
@@ -431,7 +452,7 @@ function InfoField({ label, value }) {
                 {label}
             </p>
 
-            <p className="break-words text-sm font-medium text-gray-900">
+            <p className="wrap-break-word text-sm font-medium text-gray-900">
                 {value || "—"}
             </p>
         </div>

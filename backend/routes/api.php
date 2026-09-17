@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CalculatorController;
 use App\Http\Controllers\Api\InsuranceTypeController;
+use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
     Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
     Route::get('/documents/{document}', [DocumentController::class, 'show']);
+    Route::get('/policies', [PolicyController::class, 'index']);
+    Route::get('/policies/{policy}', [PolicyController::class, 'show']);
 
     
 });
