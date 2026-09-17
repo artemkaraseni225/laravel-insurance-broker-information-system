@@ -11,6 +11,7 @@ use App\Http\Requests\Application\CreateApplicationRequest;
 use App\Models\Application;
 use App\Models\Tariff;
 use App\Services\Insurance\CalculatorService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +27,7 @@ class ApplicationController extends Controller
         $customer = $request->user()->customer;
 
         $applications = $customer->applications()
-            ->with(['insuranceType', 'tariff'])
+            ->with(['insuranceType', 'tariff', 'policy'])
             ->latest()
             ->get();
 
@@ -39,10 +40,41 @@ class ApplicationController extends Controller
     {
         Gate::authorize('view', $application);
 
-        $application->load(['customer.user','insuranceType', 'tariff.company', 'documents', 'statusHistories']);
+        $application->load(['customer.user', 'insuranceType', 'tariff.company', 'documents', 'statusHistories', 'policy']);
 
         return response()->json([
             'application' => new ApplicationResource($application),
+        ]);
+    }
+
+    public function pay(Request $request, Application $application): JsonResponse
+    {
+        Gate::authorize('view', $application);
+
+        if ($application->status !== ApplicationStatus::Approved) {
+            throw ValidationException::withMessages([
+                'application' => ['Оплатить можно только одобренную заявку.'],
+            ]);
+        }
+
+        $policy = DB::transaction(function () use ($application) {
+            $policy = $application->policy()->lockForUpdate()->firstOrFail();
+
+            if ($policy->status !== 'paid') {
+                $policy->update(['status' => 'paid']);
+                $policy->payments()->create([
+                    'amount' => $policy->premium,
+                    'status' => 'paid',
+                    'payment_method' => 'card',
+                    'paid_at' => now(),
+                ]);
+            }
+
+            return $policy;
+        });
+
+        return response()->json([
+            'policy' => $policy,
         ]);
     }
 

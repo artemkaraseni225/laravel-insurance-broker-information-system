@@ -33,6 +33,7 @@ export default function PaymentPage() {
                     premium: application.calculated_price,
                     currency: 'MDL',
                     status: application.status,
+                    policyStatus: application.policy?.status ?? 'pending_payment',
                 });
             })
             .catch(() => setPolicyError('Не удалось загрузить данные полиса'))
@@ -110,11 +111,21 @@ export default function PaymentPage() {
 
         setIsProcessing(true);
 
-        // Имитация обработки платежа
-        setTimeout(() => {
-            setIsProcessing(false);
-            setIsPaid(true);
-        }, 1500);
+        api
+            .post(`/applications/${policyId}/pay`)
+            .then(({ data }) => {
+                setPolicy((current) => ({
+                    ...current,
+                    policyStatus: data.policy.status,
+                }));
+                setIsPaid(true);
+            })
+            .catch((error) => {
+                setErrors({
+                    general: error.response?.data?.message ?? 'Не удалось провести оплату',
+                });
+            })
+            .finally(() => setIsProcessing(false));
     };
 
     if (isLoadingPolicy) {
@@ -188,6 +199,13 @@ export default function PaymentPage() {
                         className="w-full bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition"
                     >
                         Перейти к моим полисам
+                    </button>
+                    <button
+                        type="button"
+                        disabled
+                        className="mt-3 w-full rounded-xl bg-green-600 py-3 font-medium text-white"
+                    >
+                        Оплачено
                     </button>
                 </div>
             </div>
@@ -369,13 +387,22 @@ export default function PaymentPage() {
 
                                 <button
                                     type="submit"
-                                    disabled={isProcessing}
-                                    className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-medium hover:bg-gray-800 disabled:bg-gray-400 transition"
+                                    disabled={isProcessing || policy.policyStatus === 'paid'}
+                                    className={`w-full rounded-xl py-3.5 font-medium text-white transition ${
+                                        policy.policyStatus === 'paid'
+                                            ? 'bg-green-600'
+                                            : 'bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400'
+                                    }`}
                                 >
-                                    {isProcessing
+                                    {policy.policyStatus === 'paid'
+                                        ? 'Оплачено'
+                                        : isProcessing
                                         ? 'Обработка платежа...'
                                         : `Оплатить ${policy.premium} ${policy.currency}`}
                                 </button>
+                                {errors.general && (
+                                    <p className="mt-2 text-sm text-red-500">{errors.general}</p>
+                                )}
 
                             </form>
                         </div>

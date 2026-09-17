@@ -98,7 +98,9 @@ function MyApplications() {
                     <td className="py-2">{STATUS_LABELS[app.status] ?? app.status}</td>
                     <td className="py-2">{new Date(app.created_at).toLocaleDateString('ru-RU')}</td>
                     <td className="py-2">
-                      {app.status === 'approved' ? (
+                      {app.policy?.status === 'paid' ? (
+                        <span className="font-medium text-green-600">Оплачено</span>
+                      ) : app.status === 'approved' ? (
                         <Link to={`/payment/${app.id}`} className="underline">
                           Оплатить
                         </Link>
