@@ -26,9 +26,9 @@ import {
 const TYPE_FIELDS = {
   auto: {
     options: [
-      { key: 'no_accident_history', label: 'Без аварий в истории (скидка 10%)' },
+      { key: 'no_accident_history', label: 'Без аварий в истории (-10%)' },
       { key: 'additional_driver', label: 'Доп. водитель (+15%)' },
-      { key: 'roadside_assistance', label: 'Помощь на дороге (+20)' },
+      { key: 'roadside_assistance', label: 'Помощь на дороге (+20%)' },
     ],
   },
   property: {
@@ -39,7 +39,7 @@ const TYPE_FIELDS = {
   },
   health: {
     options: [
-      { key: 'dental_addon', label: 'Стоматология (+15)' },
+      { key: 'dental_addon', label: 'Стоматология (+15%)' },
       { key: 'sports_addon', label: 'Экстремальные виды спорта (+10%)' },
     ],
   },
@@ -262,7 +262,7 @@ function Calculator() {
 
             {typeCode === 'property' && (
               <div className="space-y-2">
-                <Label htmlFor="property_value">Стоимость имущества</Label>
+                <Label htmlFor="property_value">Стоимость имущества (в долларах $)</Label>
                 <Input
                   id="property_value"
                   type="number"
