@@ -12,13 +12,6 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 const initialForm = {
   name: '',
@@ -29,7 +22,6 @@ const initialForm = {
   phone: '',
   address: '',
   date_of_birth: '',
-  commission_rate: '',
 };
 
 function Register() {
@@ -40,10 +32,6 @@ function Register() {
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  function handleRoleChange(value) {
-    setForm({ ...form, role: value });
   }
 
   async function handleSubmit(e) {
@@ -76,7 +64,7 @@ function Register() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Регистрация</CardTitle>
-          <CardDescription>Создайте аккаунт клиента или брокера</CardDescription>
+          <CardDescription>Создайте новый аккаунт</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -125,59 +113,28 @@ function Register() {
             </div>
 
             <div className="space-y-2">
-              <Label>Роль</Label>
-              <Select value={form.role} onValueChange={handleRoleChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customer">Клиент</SelectItem>
-                  <SelectItem value="broker">Брокер</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="phone">Телефон</Label>
+              <Input id="phone" name="phone" value={form.phone} onChange={handleChange} />
+              {fieldError('phone') && <p className="text-sm text-destructive">{fieldError('phone')}</p>}
             </div>
-
-            {form.role === 'customer' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Телефон</Label>
-                  <Input id="phone" name="phone" value={form.phone} onChange={handleChange} />
-                  {fieldError('phone') && <p className="text-sm text-destructive">{fieldError('phone')}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Адрес</Label>
-                  <Input id="address" name="address" value={form.address} onChange={handleChange} />
-                  {fieldError('address') && <p className="text-sm text-destructive">{fieldError('address')}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Дата рождения</Label>
-                  <Input
-                    id="date_of_birth"
-                    type="date"
-                    name="date_of_birth"
-                    value={form.date_of_birth}
-                    onChange={handleChange}
-                  />
-                  {fieldError('date_of_birth') && (
-                    <p className="text-sm text-destructive">{fieldError('date_of_birth')}</p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {form.role === 'broker' && (
-              <div className="space-y-2">
-                <Label htmlFor="commission_rate">Ставка комиссии (%)</Label>
-                <Input
-                  id="commission_rate"
-                  type="number"
-                  step="0.01"
-                  name="commission_rate"
-                  value={form.commission_rate}
-                  onChange={handleChange}
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="address">Адрес</Label>
+              <Input id="address" name="address" value={form.address} onChange={handleChange} />
+              {fieldError('address') && <p className="text-sm text-destructive">{fieldError('address')}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date_of_birth">Дата рождения</Label>
+              <Input
+                id="date_of_birth"
+                type="date"
+                name="date_of_birth"
+                value={form.date_of_birth}
+                onChange={handleChange}
+              />
+              {fieldError('date_of_birth') && (
+                <p className="text-sm text-destructive">{fieldError('date_of_birth')}</p>
+              )}
+            </div>
 
             {errors.general && <p className="text-sm text-destructive">{errors.general[0]}</p>}
           </CardContent>

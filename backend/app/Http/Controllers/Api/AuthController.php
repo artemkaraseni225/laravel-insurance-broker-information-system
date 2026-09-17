@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\Broker;
 use App\Models\Customer;
 use App\Models\Role;
 use App\Models\User;
@@ -21,10 +20,10 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        // DB::transaction: если создание customers/brokers упадёт,
+        // DB::transaction: если создание упадёт,
         // откатится и созданный users — не останется "голого" юзера без профиля
         $user = DB::transaction(function () use ($data) {
-            $role = Role::where('name', $data['role'])->firstOrFail();
+            $role = Role::where('name', 'customer')->firstOrFail();
 
             $user = User::create([
                 'role_id' => $role->id,
@@ -33,19 +32,13 @@ class AuthController extends Controller
                 'password' => Hash::make($data['password']),
             ]);
 
-            if ($role->name === 'customer') {
                 Customer::create([
                     'user_id' => $user->id,
                     'phone' => $data['phone'],
                     'address' => $data['address'],
                     'date_of_birth' => $data['date_of_birth'],
                 ]);
-            } elseif ($role->name === 'broker') {
-                Broker::create([
-                    'user_id' => $user->id,
-                    'commission_rate' => $data['commission_rate'] ?? 0,
-                ]);
-            }
+            
 
             return $user;
         });
