@@ -10,6 +10,7 @@ import MyPolicies from './pages/MyPolicies';
 import ApplicationDetail from './pages/ApplicationDetail';
 import BrokerDashboard from './pages/BrokerDashboard';
 import BrokerApplications from './pages/BrokerApplications';
+import PaymentPage from './pages/customer/PaymentPage';
 
 function App() {
   return (
@@ -44,6 +45,11 @@ function App() {
           element={<ApplicationDetail backPath="/broker/applications" />}
         />
       </Route>
+
+      <Route
+        path="/customer/payment/:policyId"
+        element={<PaymentPage />}
+    / >
     </Routes>
   );
 }
