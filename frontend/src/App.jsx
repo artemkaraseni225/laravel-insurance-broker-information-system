@@ -16,6 +16,7 @@ import PolicyDetail from "./pages/PolicyDetail";
 function App() {
   return (
     <Routes>
+      <Route path="/calculator" element={<Calculator />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route

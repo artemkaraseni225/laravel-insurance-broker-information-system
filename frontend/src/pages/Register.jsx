@@ -60,14 +60,25 @@ function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 py-10">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Регистрация</CardTitle>
-          <CardDescription>Создайте новый аккаунт</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+    <div className="min-h-screen bg-muted/40">
+      <header className="border-b bg-background">
+        <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+          <Link to="/calculator" className="font-semibold">
+            Insurance Broker
+          </Link>
+          <Link to="/calculator" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Калькулятор
+          </Link>
+        </nav>
+      </header>
+      <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-6 py-10">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Регистрация</CardTitle>
+            <CardDescription>Создайте новый аккаунт</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Имя</Label>
               <Input id="name" name="name" value={form.name} onChange={handleChange} required />
@@ -137,20 +148,21 @@ function Register() {
             </div>
 
             {errors.general && <p className="text-sm text-destructive">{errors.general[0]}</p>}
-          </CardContent>
-          <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? 'Отправка...' : 'Зарегистрироваться'}
-            </Button>
-            <p className="text-sm text-muted-foreground">
-              Уже есть аккаунт?{' '}
-              <Link to="/login" className="underline">
-                Войти
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-3">
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? 'Отправка...' : 'Зарегистрироваться'}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Уже есть аккаунт?{' '}
+                <Link to="/login" className="underline">
+                  Войти
+                </Link>
+              </p>
+            </CardFooter>
+          </form>
+        </Card>
+      </main>
     </div>
   );
 }

@@ -46,8 +46,13 @@ const TYPE_FIELDS = {
 };
 
 function Calculator() {
+  const [isGuest, setIsGuest] = useState(() => !localStorage.getItem('auth_token'));
   const [insuranceTypes, setInsuranceTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
+
+  useEffect(() => {
+    setIsGuest(!localStorage.getItem('auth_token'));
+  }, []);
 
   const [typeCode, setTypeCode] = useState('');
   const [tariffId, setTariffId] = useState('');
@@ -204,29 +209,48 @@ function Calculator() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 py-10">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Калькулятор страховки</CardTitle>
-          <CardDescription>Выбери тип страхования и параметры</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Тип страхования</Label>
-              <Select value={typeCode} onValueChange={handleTypeChange} disabled={loadingTypes}>
-                <SelectTrigger>
-                  <SelectValue placeholder={loadingTypes ? 'Загрузка...' : 'Выберите тип'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {insuranceTypes.map((type) => (
-                    <SelectItem key={type.code} value={type.code}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="min-h-screen bg-muted/40">
+      {isGuest && (
+        <header className="border-b bg-background">
+          <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+            <Link to="/calculator" className="font-semibold">
+              Insurance Broker
+            </Link>
+            <div className="flex items-center gap-4">
+              <Link to="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                Войти
+              </Link>
+              <Link to="/register" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                Регистрация
+              </Link>
             </div>
+          </nav>
+        </header>
+      )}
+
+      <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Калькулятор страховки</CardTitle>
+            <CardDescription>Выбери тип страхования и параметры</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Тип страхования</Label>
+                <Select value={typeCode} onValueChange={handleTypeChange} disabled={loadingTypes}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingTypes ? 'Загрузка...' : 'Выберите тип'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {insuranceTypes.map((type) => (
+                      <SelectItem key={type.code} value={type.code}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
             {selectedType && (
               <div className="space-y-2">
@@ -315,89 +339,90 @@ function Calculator() {
               </div>
             )}
 
-            {result && (
-              <div className="space-y-3 border-t pt-4">
-                {!application && (
-                  <div className="space-y-2">
-                    <Label htmlFor="documents">Прикрепить документы (необязательно)</Label>
-                    <Input
-                      id="documents"
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFilesSelected}
-                    />
-                    {files.length > 0 && (
-                      <ul className="space-y-1 text-sm text-muted-foreground">
-                        {files.map((file, index) => (
-                          <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-2">
-                            <span className="truncate">{file.name}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeFile(index)}
-                              className="text-destructive underline"
-                            >
-                              убрать
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
+              {result && (
+                <div className="space-y-3 border-t pt-4">
+                  {!application && (
+                    <div className="space-y-2">
+                      <Label htmlFor="documents">Прикрепить документы (необязательно)</Label>
+                      <Input
+                        id="documents"
+                        type="file"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFilesSelected}
+                      />
+                      {files.length > 0 && (
+                        <ul className="space-y-1 text-sm text-muted-foreground">
+                          {files.map((file, index) => (
+                            <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-2">
+                              <span className="truncate">{file.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeFile(index)}
+                                className="text-destructive underline"
+                              >
+                                убрать
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
 
-                {applicationError === 'unauthenticated' ? (
-                  <p className="text-sm text-destructive">
-                    Войдите в аккаунт, чтобы подать заявку —{' '}
-                    <Link to="/login" className="underline">
-                      вход
-                    </Link>{' '}
-                    /{' '}
-                    <Link to="/register" className="underline">
-                      регистрация
-                    </Link>
-                    .
-                  </p>
-                ) : (
-                  applicationError && <p className="text-sm text-destructive">{applicationError}</p>
-                )}
-
-                {application ? (
-                  <div className="space-y-1">
-                    <p className="text-sm text-green-600">
-                      Заявка №{application.id} создана, статус: {application.status}.
-                      {uploadingDocuments && ' Загружаем документы...'}
-                      {!uploadingDocuments && files.length > 0 && ` Загружено документов: ${uploadedCount} из ${files.length}.`}
+                  {applicationError === 'unauthenticated' ? (
+                    <p className="text-sm text-destructive">
+                      Войдите в аккаунт, чтобы подать заявку —{' '}
+                      <Link to="/login" className="underline">
+                        вход
+                      </Link>{' '}
+                      /{' '}
+                      <Link to="/register" className="underline">
+                        регистрация
+                      </Link>
+                      .
                     </p>
-                    {uploadErrors.length > 0 && (
-                      <ul className="text-sm text-destructive">
-                        {uploadErrors.map((msg) => (
-                          <li key={msg}>{msg}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={handleSubmitApplication}
-                    disabled={submittingApplication}
-                  >
-                    {submittingApplication ? 'Отправка заявки...' : 'Подать заявку'}
-                  </Button>
-                )}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={submitting || !typeCode || !tariffId}>
-              {submitting ? 'Считаем...' : 'Рассчитать'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+                  ) : (
+                    applicationError && <p className="text-sm text-destructive">{applicationError}</p>
+                  )}
+
+                  {application ? (
+                    <div className="space-y-1">
+                      <p className="text-sm text-green-600">
+                        Заявка №{application.id} создана, статус: {application.status}.
+                        {uploadingDocuments && ' Загружаем документы...'}
+                        {!uploadingDocuments && files.length > 0 && ` Загружено документов: ${uploadedCount} из ${files.length}.`}
+                      </p>
+                      {uploadErrors.length > 0 && (
+                        <ul className="text-sm text-destructive">
+                          {uploadErrors.map((msg) => (
+                            <li key={msg}>{msg}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={handleSubmitApplication}
+                      disabled={submittingApplication}
+                    >
+                      {submittingApplication ? 'Отправка заявки...' : 'Подать заявку'}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={submitting || !typeCode || !tariffId}>
+                {submitting ? 'Считаем...' : 'Рассчитать'}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </main>
     </div>
   );
 }
