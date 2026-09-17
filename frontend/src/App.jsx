@@ -11,6 +11,7 @@ import ApplicationDetail from './pages/ApplicationDetail';
 import BrokerDashboard from './pages/BrokerDashboard';
 import BrokerApplications from './pages/BrokerApplications';
 import PaymentPage from './pages/PaymentPage';
+import PolicyDetail from "./pages/PolicyDetail";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="my-applications" element={<MyApplications />} />
         <Route path="my-applications/:id" element={<ApplicationDetail />} />
         <Route path="my-policies" element={<MyPolicies />} />
+        <Route path="/policies/:id" element={<PolicyDetail />} />
         <Route path="payment/:policyId" element={<PaymentPage />} />
       </Route>
       <Route
@@ -46,7 +48,6 @@ function App() {
           element={<ApplicationDetail backPath="/broker/applications" />}
         />
       </Route>
-
     </Routes>
   );
 }
