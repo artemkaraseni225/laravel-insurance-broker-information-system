@@ -187,7 +187,7 @@ export default function PaymentPage() {
                     </h1>
 
                     <p className="text-gray-500 mt-2">
-                        Проверьте данные полиса и введите данные банковской карты.
+                        Проверьте и введите данные банковской карты.
                     </p>
                 </div>
 
@@ -203,9 +203,6 @@ export default function PaymentPage() {
                                         Данные карты
                                     </h2>
 
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Используйте тестовую карту для имитации оплаты.
-                                    </p>
                                 </div>
 
                                 <div className="text-sm font-medium text-gray-500">
@@ -259,7 +256,7 @@ export default function PaymentPage() {
                                         name="cardHolder"
                                         value={formData.cardHolder}
                                         onChange={handleChange}
-                                        placeholder="ARTEM BUCICOVSCHI"
+                                        placeholder="ARTIOM CARASENI"
                                         className={`w-full px-4 py-3 rounded-xl border ${
                                             errors.cardHolder
                                                 ? 'border-red-500'
