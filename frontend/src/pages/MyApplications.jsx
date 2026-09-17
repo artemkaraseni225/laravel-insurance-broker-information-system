@@ -78,6 +78,7 @@ function MyApplications() {
                   <th className="py-2">Цена</th>
                   <th className="py-2">Статус</th>
                   <th className="py-2">Дата</th>
+                  <th className="py-2">Действие</th>
                 </tr>
               </thead>
               <tbody>
@@ -96,6 +97,15 @@ function MyApplications() {
                     <td className="py-2">{app.calculated_price}</td>
                     <td className="py-2">{STATUS_LABELS[app.status] ?? app.status}</td>
                     <td className="py-2">{new Date(app.created_at).toLocaleDateString('ru-RU')}</td>
+                    <td className="py-2">
+                      {app.status === 'approved' ? (
+                        <Link to={`/payment/${app.id}`} className="underline">
+                          Оплатить
+                        </Link>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

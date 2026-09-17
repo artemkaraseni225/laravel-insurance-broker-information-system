@@ -29,6 +29,7 @@ function App() {
         <Route path="my-applications" element={<MyApplications />} />
         <Route path="my-applications/:id" element={<ApplicationDetail />} />
         <Route path="my-policies" element={<MyPolicies />} />
+        <Route path="payment/:policyId" element={<PaymentPage />} />
       </Route>
       <Route
         path="/broker"
@@ -46,10 +47,6 @@ function App() {
         />
       </Route>
 
-      <Route
-        path="/payment/:policyId"
-        element={<PaymentPage />}
-    / >
     </Routes>
   );
 }
