@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\Document;
 use App\Models\User;
 use App\Policies\ApplicationPolicy;
+use App\Observers\ApplicationObserver;
 use App\Policies\DocumentPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -28,5 +29,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(Document::class, DocumentPolicy::class);
+
+        Application::observe(ApplicationObserver::class);
     }
 }
