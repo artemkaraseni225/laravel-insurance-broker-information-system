@@ -10,7 +10,7 @@ import MyPolicies from './pages/MyPolicies';
 import ApplicationDetail from './pages/ApplicationDetail';
 import BrokerDashboard from './pages/BrokerDashboard';
 import BrokerApplications from './pages/BrokerApplications';
-import PaymentPage from './pages/customer/PaymentPage';
+import PaymentPage from './pages/PaymentPage';
 
 function App() {
   return (
@@ -47,7 +47,7 @@ function App() {
       </Route>
 
       <Route
-        path="/customer/payment/:policyId"
+        path="/payment/:policyId"
         element={<PaymentPage />}
     / >
     </Routes>
