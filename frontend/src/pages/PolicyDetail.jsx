@@ -2,6 +2,30 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 
+function formatPolicyDate(value) {
+    if (!value) {
+        return '—';
+    }
+
+    const date = new Date(`${value.slice(0, 10)}T00:00:00`);
+
+    return Number.isNaN(date.getTime())
+        ? '—'
+        : new Intl.DateTimeFormat('ru-RU').format(date);
+}
+
+function formatDateTime(value) {
+    if (!value) {
+        return '—';
+    }
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+        ? '—'
+        : new Intl.DateTimeFormat('ru-RU').format(date);
+}
+
 export default function PolicyDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -16,6 +40,16 @@ export default function PolicyDetail() {
             .then(({ data }) => {
                 const currentPolicy = data.policy;
                 const insuranceData = currentPolicy.application?.insurance_data ?? {};
+                const paidAt = currentPolicy.payment?.paid_at;
+                const termMonths = Number(insuranceData.term_months);
+                const fallbackStartDate = paidAt ? paidAt.slice(0, 10) : null;
+                const fallbackEndDate = fallbackStartDate && termMonths > 0
+                    ? (() => {
+                        const endDate = new Date(`${fallbackStartDate}T00:00:00`);
+                        endDate.setMonth(endDate.getMonth() + termMonths);
+                        return endDate.toISOString().slice(0, 10);
+                    })()
+                    : null;
 
                 setPolicy({
                     id: currentPolicy.id,
@@ -47,16 +81,16 @@ export default function PolicyDetail() {
                         paidAmount: currentPolicy.premium,
                     },
                     period: {
-                        start: currentPolicy.start_date ?? '—',
-                        end: currentPolicy.end_date ?? '—',
+                        start: formatPolicyDate(currentPolicy.start_date ?? fallbackStartDate),
+                        end: formatPolicyDate(currentPolicy.end_date ?? fallbackEndDate),
                     },
-                    createdAt: '—',
-                    issuedAt: '—',
-                    broker: '—',
+                    createdAt: formatDateTime(currentPolicy.application?.created_at),
+                    issuedAt: formatDateTime(currentPolicy.application?.created_at),
+                    broker: currentPolicy.application?.broker?.name ?? '—',
                     payment: {
                         status: currentPolicy.payment?.status ?? 'paid',
                         method: currentPolicy.payment?.method ?? '—',
-                        date: currentPolicy.payment?.paid_at ?? '—',
+                        date: formatDateTime(currentPolicy.payment?.paid_at),
                         transactionId: currentPolicy.payment?.transaction_id ?? '—',
                     },
                 });

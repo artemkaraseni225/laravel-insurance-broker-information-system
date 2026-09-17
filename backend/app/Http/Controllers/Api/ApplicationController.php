@@ -57,11 +57,25 @@ class ApplicationController extends Controller
             ]);
         }
 
-        $policy = DB::transaction(function () use ($application) {
+        $termMonths = (int) data_get($application->insurance_data, 'term_months');
+
+        if ($termMonths < 1) {
+            throw ValidationException::withMessages([
+                'term_months' => ['У заявки не указан корректный срок страхования.'],
+            ]);
+        }
+
+        $policy = DB::transaction(function () use ($application, $termMonths) {
             $policy = $application->policy()->lockForUpdate()->firstOrFail();
 
             if ($policy->status !== 'paid') {
-                $policy->update(['status' => 'paid']);
+                $startDate = now();
+
+                $policy->update([
+                    'status' => 'paid',
+                    'start_date' => $startDate,
+                    'end_date' => $startDate->copy()->addMonthsNoOverflow($termMonths),
+                ]);
                 $policy->payments()->create([
                     'amount' => $policy->premium,
                     'status' => 'paid',

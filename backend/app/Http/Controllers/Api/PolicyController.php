@@ -41,6 +41,7 @@ class PolicyController extends Controller
             ->with([
                 'application.insuranceType',
                 'application.customer.user',
+                'application.broker.user',
                 'application.tariff.company',
                 'payments',
             ]);

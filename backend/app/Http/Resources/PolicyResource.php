@@ -20,6 +20,7 @@ class PolicyResource extends JsonResource
             'end_date' => $this->end_date,
             'application' => [
                 'id' => $this->application->id,
+                'created_at' => $this->application->created_at,
                 'insurance_data' => $this->application->insurance_data,
                 'insurance_type' => [
                     'name' => $this->application->insuranceType?->name,
@@ -29,6 +30,9 @@ class PolicyResource extends JsonResource
                     'email' => $this->application->customer?->user?->email,
                     'phone' => $this->application->customer?->phone,
                     'address' => $this->application->customer?->address,
+                ],
+                'broker' => [
+                    'name' => $this->application->broker?->user?->name,
                 ],
                 'tariff' => [
                     'company' => [
