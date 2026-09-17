@@ -1,6 +1,7 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import api from '../services/api';
 
 export default function PaymentPage() {
     const navigate = useNavigate();
@@ -16,18 +17,27 @@ export default function PaymentPage() {
     const [errors, setErrors] = useState({});
     const [isProcessing, setIsProcessing] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
+    const [policy, setPolicy] = useState(null);
+    const [isLoadingPolicy, setIsLoadingPolicy] = useState(true);
+    const [policyError, setPolicyError] = useState(null);
 
-    // Пока используем тестовые данные.
-    // Позже эти данные можно получать через Laravel API.
-    const policy = {
-        id: policyId || 'POL-2026-00015',
-        insuranceType: 'ОСАГО',
-        premium: 1500,
-        currency: 'MDL',
-        status: 'pending_payment',
-        startDate: '01.10.2026',
-        endDate: '30.09.2027',
-    };
+    useEffect(() => {
+        api
+            .get(`/applications/${policyId}`)
+            .then(({ data }) => {
+                const application = data.application;
+
+                setPolicy({
+                    id: application.id,
+                    insuranceType: application.insurance_type?.name ?? '—',
+                    premium: application.calculated_price,
+                    currency: 'MDL',
+                    status: application.status,
+                });
+            })
+            .catch(() => setPolicyError('Не удалось загрузить данные полиса'))
+            .finally(() => setIsLoadingPolicy(false));
+    }, [policyId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -106,6 +116,21 @@ export default function PaymentPage() {
             setIsPaid(true);
         }, 1500);
     };
+
+    if (isLoadingPolicy) {
+        return <p className="p-6 text-center text-gray-500">Загрузка данных полиса...</p>;
+    }
+
+    if (policyError || !policy) {
+        return (
+            <div className="p-6 text-center">
+                <p className="text-red-500">{policyError ?? 'Полис не найден'}</p>
+                <button type="button" onClick={() => navigate(-1)} className="mt-4 underline">
+                    Назад
+                </button>
+            </div>
+        );
+    }
 
     if (isPaid) {
         return (
