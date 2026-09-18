@@ -26,9 +26,9 @@ import {
 const TYPE_FIELDS = {
   auto: {
     options: [
-      { key: 'no_accident_history', label: 'Без аварий в истории (-10%)' },
+      { key: 'no_accident_history', label: 'Без аварий в истории (скидка 10%)' },
       { key: 'additional_driver', label: 'Доп. водитель (+15%)' },
-      { key: 'roadside_assistance', label: 'Помощь на дороге (+20%)' },
+      { key: 'roadside_assistance', label: 'Помощь на дороге (+20)' },
     ],
   },
   property: {
@@ -39,20 +39,69 @@ const TYPE_FIELDS = {
   },
   health: {
     options: [
-      { key: 'dental_addon', label: 'Стоматология (+15%)' },
+      { key: 'dental_addon', label: 'Стоматология (+15)' },
       { key: 'sports_addon', label: 'Экстремальные виды спорта (+10%)' },
     ],
   },
 };
 
+// Доп. поля полной заявки — доступны только авторизованным клиентам
+const EXTENDED_FIELDS = {
+  auto: [
+    { key: 'license_plate', label: 'Гос. номер ТС', type: 'text' },
+    { key: 'vin_or_tech_passport', label: 'VIN-код или номер техпаспорта', type: 'text' },
+    { key: 'engine_volume', label: 'Объём двигателя (см³)', type: 'number' },
+    { key: 'driving_experience_years', label: 'Стаж вождения (лет)', type: 'number' },
+    { key: 'idnp', label: 'IDNP (персональный код)', type: 'text' },
+  ],
+  property: [
+    { key: 'property_address', label: 'Точный адрес (город, улица, дом, квартира)', type: 'text' },
+    {
+      key: 'property_type',
+      label: 'Тип недвижимости',
+      type: 'select',
+      options: [
+        { value: 'apartment', label: 'Квартира' },
+        { value: 'house', label: 'Частный дом' },
+      ],
+    },
+    { key: 'area_sqm', label: 'Площадь (кв. м)', type: 'number' },
+    { key: 'has_risk_factors', label: 'Есть деревянные перекрытия или печное отопление', type: 'checkbox' },
+  ],
+  health: [
+    { key: 'date_of_birth', label: 'Точная дата рождения', type: 'date' },
+    { key: 'idnp', label: 'IDNP / номер паспорта', type: 'text' },
+  ],
+};
+
 function Calculator() {
-  const [isGuest, setIsGuest] = useState(() => !localStorage.getItem('auth_token'));
-  const [insuranceTypes, setInsuranceTypes] = useState([]);
-  const [loadingTypes, setLoadingTypes] = useState(true);
+  // Своя независимая проверка авторизации — в проекте нет общего
+  // AuthContext, ProtectedRoute тоже сам стучится на /me при каждом
+  // монтировании, делаем так же для единообразия
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    setIsGuest(!localStorage.getItem('auth_token'));
+    const token = localStorage.getItem('auth_token');
+
+    if (!token) {
+      setAuthChecked(true);
+      return;
+    }
+
+    api
+      .get('/me')
+      .then(({ data }) => setCurrentUser(data.user))
+      .catch((err) => {
+        if (err.response?.status === 401) {
+          localStorage.removeItem('auth_token');
+        }
+      })
+      .finally(() => setAuthChecked(true));
   }, []);
+
+  const [insuranceTypes, setInsuranceTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
 
   const [typeCode, setTypeCode] = useState('');
   const [tariffId, setTariffId] = useState('');
@@ -66,6 +115,8 @@ function Calculator() {
   const [submitting, setSubmitting] = useState(false);
 
   // Состояние подачи заявки — отдельно от расчёта цены
+  const [showExtendedForm, setShowExtendedForm] = useState(false);
+  const [extendedData, setExtendedData] = useState({});
   const [files, setFiles] = useState([]);
   const [application, setApplication] = useState(null);
   const [applicationError, setApplicationError] = useState(null);
@@ -90,6 +141,13 @@ function Calculator() {
     setApplicationError(null);
     setFiles([]);
     setUploadedCount(0);
+    setUploadErrors([]);
+    setShowExtendedForm(false);
+    setExtendedData({});
+  }
+
+  function handleExtendedChange(key, value) {
+    setExtendedData((prev) => ({ ...prev, [key]: value }));
   }
 
   function handleFilesSelected(e) {
@@ -163,8 +221,21 @@ function Calculator() {
     setApplicationError(null);
     setSubmittingApplication(true);
 
+    const extendedPayload = {};
+    for (const field of EXTENDED_FIELDS[typeCode] ?? []) {
+      const value = extendedData[field.key];
+
+      if (field.type === 'number') {
+        extendedPayload[field.key] = value !== undefined && value !== '' ? Number(value) : value;
+      } else if (field.type === 'checkbox') {
+        extendedPayload[field.key] = !!value;
+      } else {
+        extendedPayload[field.key] = value;
+      }
+    }
+
     try {
-      const { data } = await api.post('/applications', buildPayload());
+      const { data } = await api.post('/applications', { ...buildPayload(), ...extendedPayload });
       setApplication(data.application);
 
       if (files.length > 0) {
@@ -174,7 +245,7 @@ function Calculator() {
 
         for (const file of files) {
           const formData = new FormData();
-          formData.append('document', file);
+          formData.append('file', file);
 
           try {
             await api.post(`/applications/${data.application.id}/documents`, formData);
@@ -209,48 +280,29 @@ function Calculator() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/40">
-      {isGuest && (
-        <header className="border-b bg-background">
-          <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-            <Link to="/calculator" className="font-semibold">
-              Insurance Broker
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                Войти
-              </Link>
-              <Link to="/register" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                Регистрация
-              </Link>
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 py-10">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Калькулятор страховки</CardTitle>
+          <CardDescription>Выбери тип страхования и параметры</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Тип страхования</Label>
+              <Select value={typeCode} onValueChange={handleTypeChange} disabled={loadingTypes}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingTypes ? 'Загрузка...' : 'Выберите тип'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {insuranceTypes.map((type) => (
+                    <SelectItem key={type.code} value={type.code}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </nav>
-        </header>
-      )}
-
-      <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Калькулятор страховки</CardTitle>
-            <CardDescription>Выбери тип страхования и параметры</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Тип страхования</Label>
-                <Select value={typeCode} onValueChange={handleTypeChange} disabled={loadingTypes}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingTypes ? 'Загрузка...' : 'Выберите тип'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {insuranceTypes.map((type) => (
-                      <SelectItem key={type.code} value={type.code}>
-                        {type.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
             {selectedType && (
               <div className="space-y-2">
@@ -286,7 +338,7 @@ function Calculator() {
 
             {typeCode === 'property' && (
               <div className="space-y-2">
-                <Label htmlFor="property_value">Стоимость имущества (в долларах $)</Label>
+                <Label htmlFor="property_value">Стоимость имущества</Label>
                 <Input
                   id="property_value"
                   type="number"
@@ -339,9 +391,93 @@ function Calculator() {
               </div>
             )}
 
-              {result && (
-                <div className="space-y-3 border-t pt-4">
-                  {!application && (
+            {result && (
+              <div className="space-y-3 border-t pt-4">
+                {!application && !showExtendedForm && authChecked && (
+                  <>
+                    {!currentUser && (
+                      <p className="text-sm text-muted-foreground">
+                        Чтобы оформить полноценную заявку, нужно{' '}
+                        <Link to="/login" className="underline">
+                          войти
+                        </Link>{' '}
+                        или{' '}
+                        <Link to="/register" className="underline">
+                          зарегистрироваться
+                        </Link>
+                        .
+                      </p>
+                    )}
+                    {currentUser && currentUser.role?.name !== 'customer' && (
+                      <p className="text-sm text-muted-foreground">
+                        Заявки может подавать только клиент.
+                      </p>
+                    )}
+                    {currentUser && currentUser.role?.name === 'customer' && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => setShowExtendedForm(true)}
+                      >
+                        Оформить заявку
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {!application && showExtendedForm && (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Для полноценной заявки нужно немного больше деталей:
+                    </p>
+
+                    {(EXTENDED_FIELDS[typeCode] ?? []).map((field) => (
+                      <div key={field.key} className="space-y-2">
+                        {field.type === 'checkbox' ? (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id={field.key}
+                              checked={!!extendedData[field.key]}
+                              onCheckedChange={(checked) => handleExtendedChange(field.key, checked)}
+                            />
+                            <Label htmlFor={field.key} className="font-normal">
+                              {field.label}
+                            </Label>
+                          </div>
+                        ) : (
+                          <>
+                            <Label htmlFor={field.key}>{field.label}</Label>
+                            {field.type === 'select' ? (
+                              <Select
+                                value={extendedData[field.key] ?? ''}
+                                onValueChange={(value) => handleExtendedChange(field.key, value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Выберите" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {field.options.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                id={field.key}
+                                type={field.type}
+                                value={extendedData[field.key] ?? ''}
+                                onChange={(e) => handleExtendedChange(field.key, e.target.value)}
+                                required={!field.optional}
+                              />
+                            )}
+                          </>
+                        )}
+                      </div>
+                    ))}
+
                     <div className="space-y-2">
                       <Label htmlFor="documents">Прикрепить документы (необязательно)</Label>
                       <Input
@@ -368,61 +504,62 @@ function Calculator() {
                         </ul>
                       )}
                     </div>
-                  )}
+                  </>
+                )}
 
-                  {applicationError === 'unauthenticated' ? (
-                    <p className="text-sm text-destructive">
-                      Войдите в аккаунт, чтобы подать заявку —{' '}
-                      <Link to="/login" className="underline">
-                        вход
-                      </Link>{' '}
-                      /{' '}
-                      <Link to="/register" className="underline">
-                        регистрация
-                      </Link>
-                      .
+                {applicationError === 'unauthenticated' ? (
+                  <p className="text-sm text-destructive">
+                    Войдите в аккаунт, чтобы подать заявку —{' '}
+                    <Link to="/login" className="underline">
+                      вход
+                    </Link>{' '}
+                    /{' '}
+                    <Link to="/register" className="underline">
+                      регистрация
+                    </Link>
+                    .
+                  </p>
+                ) : (
+                  applicationError && <p className="text-sm text-destructive">{applicationError}</p>
+                )}
+
+                {application ? (
+                  <div className="space-y-1">
+                    <p className="text-sm text-green-600">
+                      Заявка №{application.id} создана, статус: {application.status}.
+                      {uploadingDocuments && ' Загружаем документы...'}
+                      {!uploadingDocuments && files.length > 0 && ` Загружено документов: ${uploadedCount} из ${files.length}.`}
                     </p>
-                  ) : (
-                    applicationError && <p className="text-sm text-destructive">{applicationError}</p>
-                  )}
-
-                  {application ? (
-                    <div className="space-y-1">
-                      <p className="text-sm text-green-600">
-                        Заявка №{application.id} создана, статус: {application.status}.
-                        {uploadingDocuments && ' Загружаем документы...'}
-                        {!uploadingDocuments && files.length > 0 && ` Загружено документов: ${uploadedCount} из ${files.length}.`}
-                      </p>
-                      {uploadErrors.length > 0 && (
-                        <ul className="text-sm text-destructive">
-                          {uploadErrors.map((msg) => (
-                            <li key={msg}>{msg}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ) : (
+                    {uploadErrors.length > 0 && (
+                      <ul className="text-sm text-destructive">
+                        {uploadErrors.map((msg) => (
+                          <li key={msg}>{msg}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : (
+                  showExtendedForm && (
                     <Button
                       type="button"
-                      variant="secondary"
                       className="w-full"
                       onClick={handleSubmitApplication}
                       disabled={submittingApplication}
                     >
-                      {submittingApplication ? 'Отправка заявки...' : 'Подать заявку'}
+                      {submittingApplication ? 'Отправка заявки...' : 'Отправить заявку'}
                     </Button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={submitting || !typeCode || !tariffId}>
-                {submitting ? 'Считаем...' : 'Рассчитать'}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      </main>
+                  )
+                )}
+              </div>
+            )}
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" className="w-full" disabled={submitting || !typeCode || !tariffId}>
+              {submitting ? 'Считаем...' : 'Рассчитать'}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
     </div>
   );
 }
