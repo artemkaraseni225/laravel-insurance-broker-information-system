@@ -46,6 +46,8 @@ const TYPE_FIELDS = {
 };
 
 // Доп. поля полной заявки — доступны только авторизованным клиентам
+const ALLOWED_DOCUMENT_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
+
 const EXTENDED_FIELDS = {
   auto: [
     { key: 'license_plate', label: 'Гос. номер ТС', type: 'text' },
@@ -66,6 +68,7 @@ const EXTENDED_FIELDS = {
       ],
     },
     { key: 'area_sqm', label: 'Площадь (кв. м)', type: 'number' },
+    { key: 'idnp', label: 'IDNP (персональный код)', type: 'text' },
     { key: 'has_risk_factors', label: 'Есть деревянные перекрытия или печное отопление', type: 'checkbox' },
   ],
   health: [
@@ -150,8 +153,25 @@ function Calculator() {
     setExtendedData((prev) => ({ ...prev, [key]: value }));
   }
 
+  function getInvalidDocuments(fileList) {
+    return Array.from(fileList).filter((file) => {
+      const name = file.name.toLowerCase();
+      const extension = name.includes('.') ? name.split('.').pop() : '';
+      return !ALLOWED_DOCUMENT_EXTENSIONS.includes(extension);
+    });
+  }
+
   function handleFilesSelected(e) {
     const newFiles = Array.from(e.target.files);
+    const invalidFiles = getInvalidDocuments(newFiles);
+
+    if (invalidFiles.length > 0) {
+      setApplicationError('Некоторые файлы имеют неподходящий формат. Разрешены только PDF, JPG, JPEG, PNG.');
+      e.target.value = '';
+      return;
+    }
+
+    setApplicationError(null);
     setFiles((prev) => [...prev, ...newFiles]);
     e.target.value = ''; // сбрасываем инпут, чтобы можно было выбрать те же файлы ещё раз при необходимости
   }
@@ -218,10 +238,20 @@ function Calculator() {
   }
 
   async function handleSubmitApplication() {
+    const invalidFiles = getInvalidDocuments(files);
+
+    if (invalidFiles.length > 0) {
+      setApplicationError('Файл имеет неподходящий формат. Разрешены только PDF, JPG, JPEG, PNG.');
+      return;
+    }
+
     setApplicationError(null);
     setSubmittingApplication(true);
 
-    const extendedPayload = {};
+    const extendedPayload = {
+      personal_data_consent: !!extendedData.personal_data_consent,
+    };
+
     for (const field of EXTENDED_FIELDS[typeCode] ?? []) {
       const value = extendedData[field.key];
 
@@ -232,6 +262,12 @@ function Calculator() {
       } else {
         extendedPayload[field.key] = value;
       }
+    }
+
+    if (!extendedPayload.personal_data_consent) {
+      setApplicationError('Необходимо согласие на обработку персональных данных.');
+      setSubmittingApplication(false);
+      return;
     }
 
     try {
@@ -245,7 +281,7 @@ function Calculator() {
 
         for (const file of files) {
           const formData = new FormData();
-          formData.append('file', file);
+          formData.append('document', file);
 
           try {
             await api.post(`/applications/${data.application.id}/documents`, formData);
@@ -477,6 +513,17 @@ function Calculator() {
                         )}
                       </div>
                     ))}
+
+                    <div className="flex items-center gap-2 rounded-md border bg-background p-3">
+                      <Checkbox
+                        id="personal_data_consent"
+                        checked={!!extendedData.personal_data_consent}
+                        onCheckedChange={(checked) => handleExtendedChange('personal_data_consent', checked)}
+                      />
+                      <Label htmlFor="personal_data_consent" className="font-normal">
+                        Я согласен на обработку персональных данных
+                      </Label>
+                    </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="documents">Прикрепить документы (необязательно)</Label>

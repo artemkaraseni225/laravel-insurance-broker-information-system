@@ -5,10 +5,6 @@ namespace App\Http\Requests\Application;
 use App\Http\Requests\Calculator\CalculateInsuranceRequest;
 use Illuminate\Validation\Rule;
 
-// Расширенные поля полной заявки (доступны только авторизованным
-// клиентам — гейтинг на фронте через AuthContext). Заменяют собой
-// предыдущий черновой набор полей на более реалистичный молдавский
-// страховой контекст (IDNP, VIN/техпаспорт и т.д.).
 class CreateApplicationRequest extends CalculateInsuranceRequest
 {
     public function rules(): array
@@ -29,9 +25,8 @@ class CreateApplicationRequest extends CalculateInsuranceRequest
             // health
             'date_of_birth' => ['required_if:insurance_type,health', 'nullable', 'date', 'before:today'],
 
-            // общее для auto и health — молдавский персональный код,
-            // 13 цифр (для юр. привязки документа к гражданину)
-            'idnp' => ['required_if:insurance_type,auto,health', 'nullable', 'digits:13'],
+            'idnp' => ['required_if:insurance_type,auto,health,property', 'nullable', 'digits:13'],
+            'personal_data_consent' => ['required', 'accepted'],
         ]);
     }
 }
