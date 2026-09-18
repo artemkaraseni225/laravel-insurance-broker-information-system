@@ -18,6 +18,8 @@ const STATUS_LABELS = {
 
 const FIELD_LABELS = {
   age: 'Возраст',
+  car_brand: 'Марка',
+  car_model: 'Модель',
   property_value: 'Стоимость имущества',
   term_months: 'Срок (мес.)',
   insurance_type: 'Тип страхования',

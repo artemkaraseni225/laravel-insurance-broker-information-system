@@ -15,6 +15,8 @@ class CreateApplicationRequest extends CalculateInsuranceRequest
             'vin_or_tech_passport' => ['required_if:insurance_type,auto', 'nullable', 'string', 'max:50'],
             'engine_volume' => ['required_if:insurance_type,auto', 'nullable', 'integer', 'min:50', 'max:10000'],
             'driving_experience_years' => ['required_if:insurance_type,auto', 'nullable', 'integer', 'min:0', 'max:80'],
+            'car_brand' => ['required_if:insurance_type,auto', 'nullable', 'string', 'max:50'],
+            'car_model' => ['required_if:insurance_type,auto', 'nullable', 'string', 'max:50'],
 
             // property
             'property_address' => ['required_if:insurance_type,property', 'nullable', 'string', 'max:500'],

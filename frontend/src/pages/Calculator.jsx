@@ -50,6 +50,8 @@ const ALLOWED_DOCUMENT_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
 
 const EXTENDED_FIELDS = {
   auto: [
+    { key: 'car_brand', label: 'Марка', type: 'text' },
+    { key: 'car_model', label: 'Модель', type: 'text' },
     { key: 'license_plate', label: 'Гос. номер ТС', type: 'text' },
     { key: 'vin_or_tech_passport', label: 'VIN-код или номер техпаспорта', type: 'text' },
     { key: 'engine_volume', label: 'Объём двигателя (см³)', type: 'number' },
@@ -108,6 +110,8 @@ function Calculator() {
 
   const [typeCode, setTypeCode] = useState('');
   const [tariffId, setTariffId] = useState('');
+  const [carBrand, setCarBrand] = useState('');
+  const [carModel, setCarModel] = useState('');
   const [age, setAge] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
   const [termMonths, setTermMonths] = useState('12');
@@ -204,7 +208,13 @@ function Calculator() {
       options: selectedOptions,
     };
 
-    if (typeCode === 'auto' || typeCode === 'health') {
+    if (typeCode === 'auto') {
+      payload.age = Number(age);
+      payload.car_brand = carBrand;
+      payload.car_model = carModel;
+    }
+
+    if (typeCode === 'health') {
       payload.age = Number(age);
     }
 
@@ -378,7 +388,40 @@ function Calculator() {
               </div>
             )}
 
-            {(typeCode === 'auto' || typeCode === 'health') && (
+            {typeCode === 'auto' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="car_brand">Марка</Label>
+                  <Input
+                    id="car_brand"
+                    value={carBrand}
+                    onChange={(e) => setCarBrand(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="car_model">Модель</Label>
+                  <Input
+                    id="car_model"
+                    value={carModel}
+                    onChange={(e) => setCarModel(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age">Возраст (лет)</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {typeCode === 'health' && (
               <div className="space-y-2">
                 <Label htmlFor="age">Возраст (лет)</Label>
                 <Input

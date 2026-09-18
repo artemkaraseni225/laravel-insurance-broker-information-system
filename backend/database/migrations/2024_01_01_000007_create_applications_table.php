@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->restrictOnDelete();
-            // broker_id nullable: логика назначения брокера ещё не определена (появится позже, когда будет реализован функционал назначения брокера)
             $table->foreignId('broker_id')->nullable()->constrained('brokers')->nullOnDelete();
             $table->foreignId('insurance_type_id')->constrained('insurance_types')->restrictOnDelete();
             $table->foreignId('tariff_id')->constrained('tariffs')->restrictOnDelete();
