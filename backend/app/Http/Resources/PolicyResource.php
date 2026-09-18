@@ -23,6 +23,7 @@ class PolicyResource extends JsonResource
                 'created_at' => $this->application->created_at,
                 'insurance_data' => $this->application->insurance_data,
                 'insurance_type' => [
+                    'code' => $this->application->insuranceType?->code,
                     'name' => $this->application->insuranceType?->name,
                 ],
                 'customer' => [

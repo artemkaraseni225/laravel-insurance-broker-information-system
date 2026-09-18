@@ -51,6 +51,80 @@ export default function PolicyDetail() {
                     })()
                     : null;
 
+                const insuranceTypeCode =
+                    currentPolicy.application?.insurance_type?.code ??
+                    (() => {
+                        const name = (currentPolicy.application?.insurance_type?.name ?? '').toLowerCase();
+                        if (name.includes('авто') || name.includes('маш') || name.includes('транспорт')) return 'auto';
+                        if (name.includes('недв') || name.includes('имуще') || name.includes('дом')) return 'property';
+                        if (name.includes('здоров') || name.includes('health')) return 'health';
+                        return 'unknown';
+                    })();
+
+                const insuredObject = (() => {
+                    if (insuranceTypeCode === 'auto') {
+                        return {
+                            type: 'Транспортное средство',
+                            icon: '🚗',
+                            title: [insuranceData.car_brand, insuranceData.car_model].filter(Boolean).join(' ') || 'Автомобиль',
+                            subtitle: insuranceData.license_plate || 'Гос. номер не указан',
+                            fields: [
+                                { label: 'Марка', value: insuranceData.car_brand || '—' },
+                                { label: 'Модель', value: insuranceData.car_model || '—' },
+                                { label: 'Гос. номер', value: insuranceData.license_plate || '—' },
+                                { label: 'VIN / техпаспорт', value: insuranceData.vin_or_tech_passport || '—' },
+                                { label: 'Объём двигателя', value: insuranceData.engine_volume ? `${insuranceData.engine_volume} см³` : '—' },
+                                { label: 'Стаж вождения', value: insuranceData.driving_experience_years ? `${insuranceData.driving_experience_years} лет` : '—' },
+                                { label: 'IDNP', value: insuranceData.idnp || '—' },
+                            ],
+                        };
+                    }
+
+                    if (insuranceTypeCode === 'property') {
+                        const propertyTypeLabel =
+                            insuranceData.property_type === 'apartment'
+                                ? 'Квартира'
+                                : insuranceData.property_type === 'house'
+                                    ? 'Частный дом'
+                                    : 'Недвижимость';
+
+                        return {
+                            type: 'Недвижимость',
+                            icon: '🏠',
+                            title: insuranceData.property_address || 'Недвижимость',
+                            subtitle: propertyTypeLabel,
+                            fields: [
+                                { label: 'Адрес', value: insuranceData.property_address || '—' },
+                                { label: 'Тип недвижимости', value: propertyTypeLabel },
+                                { label: 'Площадь', value: insuranceData.area_sqm ? `${insuranceData.area_sqm} кв. м` : '—' },
+                                { label: 'Есть риски', value: insuranceData.has_risk_factors === true ? 'Да' : insuranceData.has_risk_factors === false ? 'Нет' : '—' },
+                                { label: 'IDNP', value: insuranceData.idnp || '—' },
+                            ],
+                        };
+                    }
+
+                    if (insuranceTypeCode === 'health') {
+                        return {
+                            type: 'Застрахованный',
+                            icon: '👤',
+                            title: 'Физическое лицо',
+                            subtitle: insuranceData.date_of_birth ? formatPolicyDate(insuranceData.date_of_birth) : 'Дата рождения не указана',
+                            fields: [
+                                { label: 'Дата рождения', value: insuranceData.date_of_birth ? formatPolicyDate(insuranceData.date_of_birth) : '—' },
+                                { label: 'IDNP', value: insuranceData.idnp || '—' },
+                            ],
+                        };
+                    }
+
+                    return {
+                        type: 'Объект страхования',
+                        icon: '📄',
+                        title: 'Не указано',
+                        subtitle: 'Детали отсутствуют',
+                        fields: [],
+                    };
+                })();
+
                 setPolicy({
                     id: currentPolicy.id,
                     policyNumber: currentPolicy.policy_number,
@@ -66,14 +140,7 @@ export default function PolicyDetail() {
                         name: currentPolicy.application?.tariff?.company?.name ?? '—',
                         registrationNumber: '—',
                     },
-                    insuredObject: {
-                        type: '—',
-                        make: insuranceData.make ?? '—',
-                        model: insuranceData.model ?? '—',
-                        year: insuranceData.year ?? '—',
-                        registrationNumber: insuranceData.registration_number ?? '—',
-                        vin: insuranceData.vin ?? '—',
-                    },
+                    insuredObject,
                     financial: {
                         premium: currentPolicy.premium,
                         currency: 'MDL',
@@ -312,51 +379,34 @@ export default function PolicyDetail() {
                             </h3>
 
                             <div className="rounded-lg border border-gray-200 bg-gray-50 p-5">
-
                                 <div className="mb-5 flex items-center gap-3">
                                     <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-xl shadow-sm">
-                                        🚗
+                                        {policy.insuredObject.icon}
                                     </div>
 
                                     <div>
                                         <p className="text-sm text-gray-500">
-                                            Транспортное средство
+                                            {policy.insuredObject.type}
                                         </p>
 
                                         <p className="font-semibold text-gray-900">
-                                            {policy.insuredObject.make}{" "}
-                                            {policy.insuredObject.model}
+                                            {policy.insuredObject.title}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-                                    <InfoField
-                                        label="Марка"
-                                        value={policy.insuredObject.make}
-                                    />
-
-                                    <InfoField
-                                        label="Модель"
-                                        value={policy.insuredObject.model}
-                                    />
-
-                                    <InfoField
-                                        label="Год выпуска"
-                                        value={policy.insuredObject.year}
-                                    />
-
-                                    <InfoField
-                                        label="Гос. номер"
-                                        value={policy.insuredObject.registrationNumber}
-                                    />
-
-                                    <InfoField
-                                        label="VIN"
-                                        value={policy.insuredObject.vin}
-                                    />
-
+                                    {policy.insuredObject.fields.length > 0 ? (
+                                        policy.insuredObject.fields.map((field) => (
+                                            <InfoField
+                                                key={field.label}
+                                                label={field.label}
+                                                value={field.value}
+                                            />
+                                        ))
+                                    ) : (
+                                        <InfoField label="Описание" value={policy.insuredObject.subtitle} />
+                                    )}
                                 </div>
                             </div>
                         </section>

@@ -50,8 +50,6 @@ const ALLOWED_DOCUMENT_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
 
 const EXTENDED_FIELDS = {
   auto: [
-    { key: 'car_brand', label: 'Марка', type: 'text' },
-    { key: 'car_model', label: 'Модель', type: 'text' },
     { key: 'license_plate', label: 'Гос. номер ТС', type: 'text' },
     { key: 'vin_or_tech_passport', label: 'VIN-код или номер техпаспорта', type: 'text' },
     { key: 'engine_volume', label: 'Объём двигателя (см³)', type: 'number' },
@@ -409,7 +407,7 @@ function Calculator() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="age">Возраст (лет)</Label>
+                  <Label htmlFor="age">Ваш возраст (лет)</Label>
                   <Input
                     id="age"
                     type="number"
