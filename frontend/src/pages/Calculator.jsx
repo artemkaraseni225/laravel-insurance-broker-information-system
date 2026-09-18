@@ -26,21 +26,21 @@ import {
 const TYPE_FIELDS = {
   auto: {
     options: [
-      { key: 'no_accident_history', label: 'Без аварий в истории (скидка 10%)' },
-      { key: 'additional_driver', label: 'Доп. водитель (+15%)' },
-      { key: 'roadside_assistance', label: 'Помощь на дороге (+20)' },
+      { key: 'no_accident_history', label: 'Без аварий в истории (-10% от цены)' },
+      { key: 'additional_driver', label: 'Доп. водитель (+15% к цене)' },
+      { key: 'roadside_assistance', label: 'Помощь на дороге (+20% к цене)' },
     ],
   },
   property: {
     options: [
-      { key: 'security_system_discount', label: 'Есть охранная сигнализация (скидка 8%)' },
-      { key: 'full_coverage', label: 'Расширенное покрытие (+25%)' },
+      { key: 'security_system_discount', label: 'Есть охранная сигнализация (-8% от цены)' },
+      { key: 'full_coverage', label: 'Расширенное покрытие (+25% к цене)' },
     ],
   },
   health: {
     options: [
-      { key: 'dental_addon', label: 'Стоматология (+15)' },
-      { key: 'sports_addon', label: 'Экстремальные виды спорта (+10%)' },
+      { key: 'dental_addon', label: 'Стоматология (+15% к цене)' },
+      { key: 'sports_addon', label: 'Экстремальные виды спорта (+10% к цене)' },
     ],
   },
 };
@@ -316,14 +316,33 @@ function Calculator() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 py-10">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Калькулятор страховки</CardTitle>
-          <CardDescription>Выбери тип страхования и параметры</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+    <div className="min-h-screen bg-muted/40">
+      {!currentUser && authChecked && (
+        <header className="border-b bg-background">
+          <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+            <Link to="/" className="font-semibold">
+              Insurance Broker
+            </Link>
+            <div className="flex items-center gap-4">
+              <Link to="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                Войти
+              </Link>
+              <Link to="/register" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                Регистрация
+              </Link>
+            </div>
+          </nav>
+        </header>
+      )}
+
+      <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Калькулятор страховки</CardTitle>
+            <CardDescription>Выберите тип страхования и параметры</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Тип страхования</Label>
               <Select value={typeCode} onValueChange={handleTypeChange} disabled={loadingTypes}>
@@ -361,7 +380,7 @@ function Calculator() {
 
             {(typeCode === 'auto' || typeCode === 'health') && (
               <div className="space-y-2">
-                <Label htmlFor="age">Возраст</Label>
+                <Label htmlFor="age">Возраст (лет)</Label>
                 <Input
                   id="age"
                   type="number"
@@ -374,7 +393,7 @@ function Calculator() {
 
             {typeCode === 'property' && (
               <div className="space-y-2">
-                <Label htmlFor="property_value">Стоимость имущества</Label>
+                <Label htmlFor="property_value">Стоимость имущества (€)</Label>
                 <Input
                   id="property_value"
                   type="number"
@@ -599,14 +618,15 @@ function Calculator() {
                 )}
               </div>
             )}
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={submitting || !typeCode || !tariffId}>
-              {submitting ? 'Считаем...' : 'Рассчитать'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={submitting || !typeCode || !tariffId}>
+                {submitting ? 'Считаем...' : 'Рассчитать'}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </main>
     </div>
   );
 }
