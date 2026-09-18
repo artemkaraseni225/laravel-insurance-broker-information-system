@@ -20,6 +20,19 @@ const FIELD_LABELS = {
   age: 'Возраст',
   property_value: 'Стоимость имущества',
   term_months: 'Срок (мес.)',
+  insurance_type: 'Тип страхования',
+  tariff_id: 'ID тарифа',
+  license_plate: 'Гос. номер ТС',
+  vin_or_tech_passport: 'VIN-код или номер техпаспорта',
+  engine_volume: 'Объём двигателя',
+  driving_experience_years: 'Стаж вождения',
+  property_address: 'Адрес имущества',
+  property_type: 'Тип недвижимости',
+  area_sqm: 'Площадь (кв. м)',
+  has_risk_factors: 'Есть риски',
+  date_of_birth: 'Дата рождения',
+  idnp: 'IDNP',
+  personal_data_consent: 'Согласие на обработку персональных данных',
 };
 
 const OPTION_LABELS = {
@@ -103,8 +116,40 @@ function ApplicationDetail({ backPath = '/my-applications' }) {
   }
 
   const data = application.insurance_data ?? {};
-  const paramEntries = Object.entries(data).filter(([key]) => key !== 'options');
+  const paramEntries = Object.entries(data)
+    .filter(([key]) => key !== 'options')
+    .sort(([left], [right]) => {
+      const order = ['age', 'property_value', 'term_months', 'insurance_type', 'tariff_id'];
+      const indexLeft = order.indexOf(left);
+      const indexRight = order.indexOf(right);
+
+      if (indexLeft !== -1 || indexRight !== -1) {
+        return (indexLeft === -1 ? Number.MAX_SAFE_INTEGER : indexLeft) -
+          (indexRight === -1 ? Number.MAX_SAFE_INTEGER : indexRight);
+      }
+
+      return left.localeCompare(right);
+    });
   const selectedOptions = data.options ?? [];
+
+  function formatFieldValue(key, value) {
+    if (typeof value === 'boolean') {
+      return value ? 'Да' : 'Нет';
+    }
+
+    if (key === 'property_type') {
+      return value === 'apartment' ? 'Квартира' : value === 'house' ? 'Частный дом' : value;
+    }
+
+    if (key === 'date_of_birth' && value) {
+      const parsedDate = new Date(value);
+      if (!Number.isNaN(parsedDate.getTime())) {
+        return parsedDate.toLocaleDateString('ru-RU');
+      }
+    }
+
+    return String(value);
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
@@ -137,9 +182,9 @@ function ApplicationDetail({ backPath = '/my-applications' }) {
             <h3 className="mb-2 font-medium">Параметры расчёта</h3>
             <dl className="space-y-1 text-sm">
               {paramEntries.map(([key, value]) => (
-                <div key={key} className="flex justify-between">
-                  <dt className="text-muted-foreground">{FIELD_LABELS[key] ?? key}</dt>
-                  <dd>{String(value)}</dd>
+                <div key={key} className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">{FIELD_LABELS[key] ?? key.replace(/_/g, ' ')}</dt>
+                  <dd className="text-right">{formatFieldValue(key, value)}</dd>
                 </div>
               ))}
               {selectedOptions.length > 0 && (
