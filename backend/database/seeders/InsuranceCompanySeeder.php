@@ -11,8 +11,24 @@ class InsuranceCompanySeeder extends Seeder
     // страховые компании с придуманными ценами.
     public function run(): void
     {
-        foreach (['СтрахПлюс', 'ГарантАсист'] as $name) {
-            InsuranceCompany::firstOrCreate(['name' => $name]);
+        $companies = [
+            [
+                'name' => 'СтрахПлюс',
+                'registration_number' => '1003600001234',
+            ],
+            [
+                'name' => 'ГарантАсист',
+                'registration_number' => '1003600005678',
+            ],
+        ];
+
+        foreach ($companies as $company) {
+            InsuranceCompany::updateOrCreate(
+                ['name' => $company['name']],
+                [
+                    'registration_number' => $company['registration_number'],
+                ]
+            );
         }
     }
 }

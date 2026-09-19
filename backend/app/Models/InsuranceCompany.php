@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InsuranceCompany extends Model
 {
-    protected $fillable = ['name', 'logo_path', 'status'];
+    protected $fillable = ['name', 'registration_number', 'logo_path', 'status'];
 
     public function tariffs()
     {
