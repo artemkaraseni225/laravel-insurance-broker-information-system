@@ -41,6 +41,7 @@ class PolicyResource extends JsonResource
                         'registration_number' => $this->application->tariff?->company?->registration_number,
                     ],
                 ],
+                'documents' => DocumentResource::collection($this->application->documents),
             ],
             'payment' => $payment ? [
                 'status' => $payment->status,

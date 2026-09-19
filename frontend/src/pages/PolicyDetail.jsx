@@ -34,6 +34,70 @@ export default function PolicyDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    async function openPolicyPdf() {
+        const pdfWindow = window.open('', '_blank');
+
+        try {
+            const response = await api.get(`/policies/${id}/pdf`, { responseType: 'blob' });
+            const pdfUrl = URL.createObjectURL(response.data);
+
+            if (pdfWindow) {
+                pdfWindow.location.href = pdfUrl;
+                window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
+            } else {
+                URL.revokeObjectURL(pdfUrl);
+                setError('Разрешите открытие новых вкладок для просмотра PDF');
+            }
+        } catch {
+            pdfWindow?.close();
+            setError('Не удалось открыть PDF полиса');
+        }
+    }
+
+    async function downloadPolicyPdf() {
+        try {
+            const response = await api.get(`/policies/${id}/pdf`, { responseType: 'blob' });
+            const pdfUrl = URL.createObjectURL(response.data);
+            const link = document.createElement('a');
+
+            link.href = pdfUrl;
+            link.download = `policy-${policy?.policyNumber ?? id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(pdfUrl);
+        } catch {
+            setError('Не удалось скачать PDF полиса');
+        }
+    }
+
+    async function openClientDocument() {
+        const clientDocument = policy?.clientDocument;
+        const documentWindow = window.open('', '_blank');
+
+        if (!clientDocument) {
+            documentWindow?.close();
+            setError('Документ клиента отсутствует');
+            return;
+        }
+
+        try {
+            const response = await api.get(`/documents/${clientDocument.id}`, { responseType: 'blob' });
+            const documentUrl = URL.createObjectURL(response.data);
+
+            if (documentWindow) {
+                documentWindow.location.href = documentUrl;
+                window.setTimeout(() => URL.revokeObjectURL(documentUrl), 60_000);
+            } else {
+                URL.revokeObjectURL(documentUrl);
+                setError('Разрешите открытие новых вкладок для просмотра документа');
+            }
+        } catch {
+            documentWindow?.close();
+            setError('Не удалось открыть документ клиента');
+        }
+    }
+
     useEffect(() => {
         api
             .get(`/policies/${id}`)
@@ -140,6 +204,9 @@ export default function PolicyDetail() {
                         name: currentPolicy.application?.tariff?.company?.name ?? '—',
                         registrationNumber: currentPolicy.application?.tariff?.company?.registration_number ?? '—',
                     },
+                    clientDocument: currentPolicy.application?.documents?.find((document) => document.type === 'application/pdf')
+                        ?? currentPolicy.application?.documents?.[0]
+                        ?? null,
                     insuredObject,
                     financial: {
                         premium: currentPolicy.premium,
@@ -231,6 +298,13 @@ export default function PolicyDetail() {
                              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
                         >
                             Печать
+                        </button>
+                        <button
+                            type="button"
+                            onClick={downloadPolicyPdf}
+                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            Скачать
                         </button>
                     </div>
                 </div>
@@ -480,11 +554,13 @@ export default function PolicyDetail() {
                                 <DocumentRow
                                     name="Страховой полис"
                                     type="PDF"
+                                    onOpen={openPolicyPdf}
                                 />
 
                                 <DocumentRow
                                     name="Документ клиента"
                                     type="PDF"
+                                    onOpen={openClientDocument}
                                 />
 
                                 <DocumentRow
@@ -553,7 +629,7 @@ function MoneyField({ label, value, currency }) {
 }
 
 
-function DocumentRow({ name, type }) {
+function DocumentRow({ name, type, onOpen }) {
     return (
         <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
 
@@ -574,6 +650,9 @@ function DocumentRow({ name, type }) {
             </div>
 
             <button
+                type="button"
+                onClick={onOpen}
+                disabled={!onOpen}
                 className="text-sm font-medium text-gray-700 hover:text-black"
             >
                 Открыть

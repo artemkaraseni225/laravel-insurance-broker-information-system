@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/documents/{document}', [DocumentController::class, 'show']);
     Route::get('/policies', [PolicyController::class, 'index']);
     Route::get('/policies/{policy}', [PolicyController::class, 'show']);
+    Route::get('/policies/{policy}/pdf', [PolicyController::class, 'pdf']);
 
     Route::middleware('role:broker')->group(function () {
 

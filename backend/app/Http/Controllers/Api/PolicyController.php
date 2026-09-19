@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PolicyResource;
 use App\Models\Policy;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 
 class PolicyController extends Controller
@@ -32,6 +33,23 @@ class PolicyController extends Controller
         ]);
     }
 
+    public function pdf(Request $request, Policy $policy)
+    {
+        $policy = $this->customerPolicies($request)
+            ->whereKey($policy->id)
+            ->firstOrFail();
+
+        $pdf = new Dompdf();
+        $pdf->loadHtml(view('policies.pdf', compact('policy'))->render(), 'UTF-8');
+        $pdf->setPaper('A4');
+        $pdf->render();
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="policy-' . $policy->policy_number . '.pdf"',
+        ]);
+    }
+
     private function customerPolicies(Request $request)
     {
         return Policy::query()
@@ -43,6 +61,7 @@ class PolicyController extends Controller
                 'application.customer.user',
                 'application.broker.user',
                 'application.tariff.company',
+                'application.documents',
                 'payments',
             ]);
     }
