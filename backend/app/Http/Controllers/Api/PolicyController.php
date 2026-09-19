@@ -50,6 +50,26 @@ class PolicyController extends Controller
         ]);
     }
 
+    public function paymentReceipt(Request $request, Policy $policy)
+    {
+        $policy = $this->customerPolicies($request)
+            ->whereKey($policy->id)
+            ->firstOrFail();
+        $payment = $policy->payments->sortByDesc('paid_at')->first();
+
+        abort_if(!$payment, 404, 'Подтверждение оплаты не найдено');
+
+        $pdf = new Dompdf();
+        $pdf->loadHtml(view('policies.payment-receipt', compact('policy', 'payment'))->render(), 'UTF-8');
+        $pdf->setPaper('A4');
+        $pdf->render();
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="payment-receipt-' . $policy->policy_number . '.pdf"',
+        ]);
+    }
+
     private function customerPolicies(Request $request)
     {
         return Policy::query()

@@ -36,6 +36,7 @@ export default function PolicyDetail() {
     const [documentViewer, setDocumentViewer] = useState(null);
 
     const selectedDocumentId = documentViewer?.selectedDocument?.id;
+    const selectedDocumentEndpoint = documentViewer?.selectedDocument?.endpoint;
 
     useEffect(() => {
         if (!selectedDocumentId) {
@@ -45,7 +46,7 @@ export default function PolicyDetail() {
         let cancelled = false;
 
         api
-            .get(`/documents/${selectedDocumentId}`, { responseType: 'blob' })
+            .get(selectedDocumentEndpoint ?? `/documents/${selectedDocumentId}`, { responseType: 'blob' })
             .then(({ data }) => {
                 if (!cancelled) {
                     setDocumentViewer((current) => current ? {
@@ -68,7 +69,7 @@ export default function PolicyDetail() {
         return () => {
             cancelled = true;
         };
-    }, [selectedDocumentId]);
+    }, [selectedDocumentId, selectedDocumentEndpoint]);
 
     useEffect(() => () => {
         if (documentViewer?.url) {
@@ -124,6 +125,23 @@ export default function PolicyDetail() {
         setDocumentViewer({
             documents: clientDocuments,
             selectedDocument: clientDocuments[0],
+            loading: true,
+            error: null,
+            url: null,
+        });
+    }
+
+    function openPaymentReceipt() {
+        const receiptDocument = {
+            id: `payment-receipt-${id}`,
+            file_name: 'Подтверждение оплаты.pdf',
+            type: 'application/pdf',
+            endpoint: `/policies/${id}/payment-receipt`,
+        };
+
+        setDocumentViewer({
+            documents: [receiptDocument],
+            selectedDocument: receiptDocument,
             loading: true,
             error: null,
             url: null,
@@ -600,6 +618,7 @@ export default function PolicyDetail() {
                                 <DocumentRow
                                     name="Подтверждение оплаты"
                                     type="PDF"
+                                    onOpen={openPaymentReceipt}
                                 />
 
                             </div>
