@@ -36,13 +36,16 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['message' => 'ok, ты администратор']);
     });
 
-    Route::get('/broker/applications', [BrokerApplicationController::class, 'index']);
-    Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
-    Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
-    Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
     Route::get('/documents/{document}', [DocumentController::class, 'show']);
     Route::get('/policies', [PolicyController::class, 'index']);
     Route::get('/policies/{policy}', [PolicyController::class, 'show']);
 
-    
+    Route::middleware('role:broker')->group(function () {
+
+    Route::get('/broker/applications', [BrokerApplicationController::class, 'index']);
+    Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
+    Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
+    Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
+
+    });
 });
