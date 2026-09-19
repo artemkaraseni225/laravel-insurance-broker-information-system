@@ -33,6 +33,48 @@ export default function PolicyDetail() {
     const [policy, setPolicy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [documentViewer, setDocumentViewer] = useState(null);
+
+    const selectedDocumentId = documentViewer?.selectedDocument?.id;
+
+    useEffect(() => {
+        if (!selectedDocumentId) {
+            return undefined;
+        }
+
+        let cancelled = false;
+
+        api
+            .get(`/documents/${selectedDocumentId}`, { responseType: 'blob' })
+            .then(({ data }) => {
+                if (!cancelled) {
+                    setDocumentViewer((current) => current ? {
+                        ...current,
+                        loading: false,
+                        url: URL.createObjectURL(data),
+                    } : current);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setDocumentViewer((current) => current ? {
+                        ...current,
+                        loading: false,
+                        error: 'Не удалось загрузить документ',
+                    } : current);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedDocumentId]);
+
+    useEffect(() => () => {
+        if (documentViewer?.url) {
+            URL.revokeObjectURL(documentViewer.url);
+        }
+    }, [documentViewer?.url]);
 
     async function openPolicyPdf() {
         const pdfWindow = window.open('', '_blank');
@@ -71,31 +113,25 @@ export default function PolicyDetail() {
         }
     }
 
-    async function openClientDocument() {
-        const clientDocument = policy?.clientDocument;
-        const documentWindow = window.open('', '_blank');
+    function openClientDocuments() {
+        const clientDocuments = policy?.clientDocuments ?? [];
 
-        if (!clientDocument) {
-            documentWindow?.close();
-            setError('Документ клиента отсутствует');
+        if (clientDocuments.length === 0) {
+            setError('Документы клиента отсутствуют');
             return;
         }
 
-        try {
-            const response = await api.get(`/documents/${clientDocument.id}`, { responseType: 'blob' });
-            const documentUrl = URL.createObjectURL(response.data);
+        setDocumentViewer({
+            documents: clientDocuments,
+            selectedDocument: clientDocuments[0],
+            loading: true,
+            error: null,
+            url: null,
+        });
+    }
 
-            if (documentWindow) {
-                documentWindow.location.href = documentUrl;
-                window.setTimeout(() => URL.revokeObjectURL(documentUrl), 60_000);
-            } else {
-                URL.revokeObjectURL(documentUrl);
-                setError('Разрешите открытие новых вкладок для просмотра документа');
-            }
-        } catch {
-            documentWindow?.close();
-            setError('Не удалось открыть документ клиента');
-        }
+    function closeDocumentViewer() {
+        setDocumentViewer(null);
     }
 
     useEffect(() => {
@@ -204,9 +240,7 @@ export default function PolicyDetail() {
                         name: currentPolicy.application?.tariff?.company?.name ?? '—',
                         registrationNumber: currentPolicy.application?.tariff?.company?.registration_number ?? '—',
                     },
-                    clientDocument: currentPolicy.application?.documents?.find((document) => document.type === 'application/pdf')
-                        ?? currentPolicy.application?.documents?.[0]
-                        ?? null,
+                    clientDocuments: currentPolicy.application?.documents ?? [],
                     insuredObject,
                     financial: {
                         premium: currentPolicy.premium,
@@ -559,8 +593,8 @@ export default function PolicyDetail() {
 
                                 <DocumentRow
                                     name="Документ клиента"
-                                    type="PDF"
-                                    onOpen={openClientDocument}
+                                    type="Документы"
+                                    onOpen={openClientDocuments}
                                 />
 
                                 <DocumentRow
@@ -588,6 +622,20 @@ export default function PolicyDetail() {
 
                 </div>
             </div>
+
+            {documentViewer && (
+                <DocumentViewer
+                    viewer={documentViewer}
+                    onSelect={(selectedDocument) => setDocumentViewer((current) => ({
+                        ...current,
+                        selectedDocument,
+                        loading: true,
+                        error: null,
+                        url: null,
+                    }))}
+                    onClose={closeDocumentViewer}
+                />
+            )}
         </div>
     );
 }
@@ -624,6 +672,88 @@ function MoneyField({ label, value, currency }) {
             <p className="mt-2 text-xl font-bold text-gray-900">
                 {Number(value).toLocaleString("ru-RU")} {currency}
             </p>
+        </div>
+    );
+}
+
+
+function DocumentViewer({ viewer, onSelect, onClose }) {
+    const selectedDocument = viewer.selectedDocument;
+    const isImage = selectedDocument?.type?.startsWith('image/');
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="flex h-[min(760px,calc(100vh-2rem))] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl lg:flex-row">
+                <aside className="flex w-full shrink-0 flex-col border-b border-gray-200 bg-gray-50 lg:w-72 lg:border-b-0 lg:border-r">
+                    <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+                        <h2 className="font-semibold text-gray-900">Документы клиента</h2>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="rounded-md px-2 py-1 text-xl leading-none text-gray-500 hover:bg-gray-200 hover:text-gray-900"
+                            aria-label="Закрыть просмотр документов"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <div className="flex gap-2 overflow-x-auto p-3 lg:block lg:space-y-2 lg:overflow-y-auto">
+                        {viewer.documents.map((document) => (
+                            <button
+                                key={document.id}
+                                type="button"
+                                onClick={() => onSelect(document)}
+                                className={`min-w-48 rounded-lg border p-3 text-left text-sm transition lg:block lg:w-full ${selectedDocument?.id === document.id
+                                    ? 'border-gray-900 bg-white text-gray-900 shadow-sm'
+                                    : 'border-transparent text-gray-600 hover:border-gray-300 hover:bg-white'
+                                    }`}
+                            >
+                                <span className="block truncate font-medium">{document.file_name}</span>
+                                <span className="mt-1 block text-xs text-gray-500">
+                                    {document.type || 'Документ'}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </aside>
+
+                <section className="flex min-h-0 flex-1 flex-col bg-gray-100">
+                    <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-white px-5 py-3">
+                        <p className="truncate text-sm font-medium text-gray-900">
+                            {selectedDocument?.file_name}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="shrink-0 text-sm text-gray-500 hover:text-gray-900"
+                        >
+                            Закрыть
+                        </button>
+                    </div>
+
+                    <div className="flex min-h-0 flex-1 items-center justify-center p-4">
+                        {viewer.loading && <p className="text-sm text-gray-500">Загрузка документа...</p>}
+                        {!viewer.loading && viewer.error && (
+                            <p className="text-sm text-red-600">{viewer.error}</p>
+                        )}
+                        {!viewer.loading && !viewer.error && viewer.url && (
+                            isImage ? (
+                                <img
+                                    src={viewer.url}
+                                    alt={selectedDocument.file_name}
+                                    className="max-h-full max-w-full object-contain"
+                                />
+                            ) : (
+                                <iframe
+                                    src={viewer.url}
+                                    title={selectedDocument.file_name}
+                                    className="h-full w-full rounded border border-gray-300 bg-white"
+                                />
+                            )
+                        )}
+                    </div>
+                </section>
+            </div>
         </div>
     );
 }
