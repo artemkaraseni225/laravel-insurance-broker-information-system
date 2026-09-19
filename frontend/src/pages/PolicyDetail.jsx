@@ -263,7 +263,7 @@ export default function PolicyDetail() {
                     financial: {
                         premium: currentPolicy.premium,
                         currency: 'MDL',
-                        insuranceAmount: insuranceData.insurance_amount ?? '—',
+                        insuranceAmount: currentPolicy.insurance_sum ?? insuranceData.insurance_sum ?? '—',
                         paidAmount: currentPolicy.premium,
                     },
                     period: {

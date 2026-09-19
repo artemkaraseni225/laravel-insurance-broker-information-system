@@ -112,6 +112,7 @@ function Calculator() {
   const [carModel, setCarModel] = useState('');
   const [age, setAge] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
+  const [insuranceSum, setInsuranceSum] = useState('');
   const [termMonths, setTermMonths] = useState('12');
   const [options, setOptions] = useState({});
 
@@ -186,6 +187,7 @@ function Calculator() {
     setTypeCode(code);
     setTariffId('');
     setOptions({});
+    setInsuranceSum('');
     setResult(null);
     resetApplicationState();
   }
@@ -203,6 +205,7 @@ function Calculator() {
       insurance_type: typeCode,
       tariff_id: Number(tariffId),
       term_months: Number(termMonths),
+      insurance_sum: typeCode === 'health' ? 250000 : Number(insuranceSum),
       options: selectedOptions,
     };
 
@@ -407,6 +410,17 @@ function Calculator() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="insurance_sum">Оценочная стоимость автомобиля (MDL)</Label>
+                  <Input
+                    id="insurance_sum"
+                    type="number"
+                    min="1"
+                    value={insuranceSum}
+                    onChange={(e) => setInsuranceSum(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="age">Ваш возраст (лет)</Label>
                   <Input
                     id="age"
@@ -434,12 +448,16 @@ function Calculator() {
 
             {typeCode === 'property' && (
               <div className="space-y-2">
-                <Label htmlFor="property_value">Стоимость имущества (€)</Label>
+                <Label htmlFor="insurance_sum">Оценочная стоимость имущества (MDL)</Label>
                 <Input
-                  id="property_value"
+                  id="insurance_sum"
                   type="number"
-                  value={propertyValue}
-                  onChange={(e) => setPropertyValue(e.target.value)}
+                  min="1"
+                  value={insuranceSum}
+                  onChange={(e) => {
+                    setInsuranceSum(e.target.value);
+                    setPropertyValue(e.target.value);
+                  }}
                   required
                 />
               </div>

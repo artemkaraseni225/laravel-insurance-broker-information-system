@@ -16,6 +16,7 @@ class PolicyResource extends JsonResource
             'policy_number' => $this->policy_number,
             'status' => $this->status,
             'premium' => $this->premium,
+            'insurance_sum' => $this->insurance_sum,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'application' => [

@@ -13,6 +13,7 @@ class Policy extends Model
         'start_date',
         'end_date',
         'premium',
+        'insurance_sum',
     ];
 
     protected function casts(): array
@@ -20,6 +21,7 @@ class Policy extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'insurance_sum' => 'decimal:2',
         ];
     }
 

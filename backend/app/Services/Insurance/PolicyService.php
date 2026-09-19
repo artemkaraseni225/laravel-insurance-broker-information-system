@@ -16,7 +16,15 @@ class PolicyService
             // Даты действия — nullable, проставим при активации после
             // оплаты (следующий шаг), не при approval
             'premium' => $application->calculated_price,
+            'insurance_sum' => $this->insuranceSum($application),
         ]);
+    }
+
+    private function insuranceSum(Application $application): float
+    {
+        return data_get($application->insurance_data, 'insurance_type') === 'health'
+            ? 250000
+            : (float) data_get($application->insurance_data, 'insurance_sum');
     }
 
     private function generatePolicyNumber(Application $application): string
