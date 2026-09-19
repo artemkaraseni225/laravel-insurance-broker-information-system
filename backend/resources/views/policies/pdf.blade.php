@@ -47,11 +47,50 @@
 
     <h2>Застрахованный объект</h2>
     <table>
+        @php
+            $fieldLabels = [
+                'insurance_sum' => 'Страховая сумма',
+                'age' => 'Возраст',
+                'car_brand' => 'Марка автомобиля',
+                'car_model' => 'Модель автомобиля',
+                'license_plate' => 'Государственный номер',
+                'vin_or_tech_passport' => 'VIN-код или номер техпаспорта',
+                'engine_volume' => 'Объём двигателя',
+                'driving_experience_years' => 'Стаж вождения',
+                'property_value' => 'Оценочная стоимость имущества',
+                'property_address' => 'Адрес имущества',
+                'property_type' => 'Тип недвижимости',
+                'area_sqm' => 'Площадь',
+                'has_risk_factors' => 'Есть риски',
+                'date_of_birth' => 'Дата рождения',
+                'idnp' => 'IDNP',
+                'term_months' => 'Срок страхования',
+                'personal_data_consent' => 'Согласие на обработку персональных данных',
+            ];
+        @endphp
         @foreach (($policy->application->insurance_data ?? []) as $key => $value)
-            @if ($key !== 'options' && $value !== null && $value !== '')
+            @if (!in_array($key, ['options', 'tariff_id', 'insurance_type'], true) && $value !== null && $value !== '')
                 <tr>
-                    <td>{{ str_replace('_', ' ', ucfirst($key)) }}</td>
-                    <td>{{ is_bool($value) ? ($value ? 'Да' : 'Нет') : (is_array($value) ? implode(', ', $value) : $value) }}</td>
+                    <td>{{ $fieldLabels[$key] ?? $key }}</td>
+                    <td>
+                        @if (is_bool($value))
+                            {{ $value ? 'Да' : 'Нет' }}
+                        @elseif ($key === 'property_type')
+                            {{ $value === 'apartment' ? 'Квартира' : ($value === 'house' ? 'Частный дом' : $value) }}
+                        @elseif ($key === 'area_sqm')
+                            {{ $value }} кв. м
+                        @elseif ($key === 'engine_volume')
+                            {{ $value }} см³
+                        @elseif ($key === 'driving_experience_years')
+                            {{ $value }} лет
+                        @elseif ($key === 'term_months')
+                            {{ $value }} мес.
+                        @elseif (is_array($value))
+                            {{ implode(', ', $value) }}
+                        @else
+                            {{ $value }}
+                        @endif
+                    </td>
                 </tr>
             @endif
         @endforeach
