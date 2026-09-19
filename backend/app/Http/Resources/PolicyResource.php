@@ -38,6 +38,7 @@ class PolicyResource extends JsonResource
                 'tariff' => [
                     'company' => [
                         'name' => $this->application->tariff?->company?->name,
+                        'registration_number' => $this->application->tariff?->company?->registration_number,
                     ],
                 ],
             ],

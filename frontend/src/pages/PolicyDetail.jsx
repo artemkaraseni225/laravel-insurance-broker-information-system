@@ -138,7 +138,7 @@ export default function PolicyDetail() {
                     },
                     insurer: {
                         name: currentPolicy.application?.tariff?.company?.name ?? '—',
-                        registrationNumber: '—',
+                        registrationNumber: currentPolicy.application?.tariff?.company?.registration_number ?? '—',
                     },
                     insuredObject,
                     financial: {
@@ -228,15 +228,9 @@ export default function PolicyDetail() {
                     <div className="flex gap-3">
                         <button
                             onClick={() => window.print()}
-                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
                         >
                             Печать
-                        </button>
-
-                        <button
-                            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                        >
-                            Скачать PDF
                         </button>
                     </div>
                 </div>
