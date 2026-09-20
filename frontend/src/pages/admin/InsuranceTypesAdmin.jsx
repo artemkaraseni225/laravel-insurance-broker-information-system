@@ -90,8 +90,8 @@ function InsuranceTypesAdmin() {
         <CardHeader>
           <CardTitle>{editingId ? 'Редактировать тип страхования' : 'Новый тип страхования'}</CardTitle>
           <CardDescription>
-            Калькулятор и форма заявки на фронте жёстко закодированы только под auto/property/health —
-            для нового кода они работать не будут без доработки кода.
+            Калькулятор и форма заявки на фронте захардкоржены только под auto/property/health —
+            для нового типа страхования нужно будет доработать код.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -162,9 +162,6 @@ function InsuranceTypesAdmin() {
                     <td className="py-2">{type.status === 'active' ? 'Активен' : 'Неактивен'}</td>
                     <td className="py-2">{type.tariffs_count}</td>
                     <td className="py-2 flex gap-2">
-                      <button type="button" className="underline" onClick={() => startEdit(type)}>
-                        Изменить
-                      </button>
                       <button
                         type="button"
                         className="text-destructive underline"

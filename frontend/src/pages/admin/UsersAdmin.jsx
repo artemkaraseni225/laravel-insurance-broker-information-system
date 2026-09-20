@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function UsersAdmin() {
   const [users, setUsers] = useState([]);
@@ -19,21 +18,25 @@ function UsersAdmin() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(loadUsers, []);
+  useEffect(() => {
+    let active = true;
 
-  async function handleRoleChange(userId, role) {
-    setError(null);
-    setBusyId(userId);
+    api
+      .get('/users')
+      .then(({ data }) => {
+        if (active) setUsers(data.users);
+      })
+      .catch(() => {
+        if (active) setError('Не удалось загрузить пользователей');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-    try {
-      await api.patch(`/admin/users/${userId}/role`, { role });
-      loadUsers();
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Не удалось сменить роль');
-    } finally {
-      setBusyId(null);
-    }
-  }
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function handleToggleStatus(user) {
     setError(null);
@@ -46,6 +49,22 @@ function UsersAdmin() {
       loadUsers();
     } catch (err) {
       setError(err.response?.data?.message ?? 'Не удалось изменить статус');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleDelete(user) {
+    if (!window.confirm(`Удалить пользователя «${user.name}»?`)) return;
+
+    setError(null);
+    setBusyId(user.id);
+
+    try {
+      await api.delete(`/admin/users/${user.id}`);
+      loadUsers();
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Не удалось удалить пользователя');
     } finally {
       setBusyId(null);
     }
@@ -78,33 +97,32 @@ function UsersAdmin() {
                     <td className="py-2">{u.name}</td>
                     <td className="py-2">{u.email}</td>
                     <td className="py-2">
-                      <Select
-                        value={u.role?.name}
-                        onValueChange={(role) => handleRoleChange(u.id, role)}
-                        disabled={busyId === u.id}
-                      >
-                        <SelectTrigger className="w-35">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="broker">broker</SelectItem>
-                          <SelectItem value="admin">admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      {u.role?.name === 'broker' ? 'Брокер' : u.role?.name === 'customer' ? 'Пользователь' : 'Администратор'}
                     </td>
                     <td className="py-2">
                       {u.status === 'active' ? 'Активен' : 'Заблокирован'}
                     </td>
                     <td className="py-2">
-                      <Button
-                        size="sm"
-                        variant={u.status === 'active' ? 'destructive' : 'default'}
-                        disabled={busyId === u.id}
-                        onClick={() => handleToggleStatus(u)}
-                      >
-                        {u.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
-                      </Button>
+                      {u.role?.name !== 'admin' && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant={u.status === 'active' ? 'destructive' : 'default'}
+                            disabled={busyId === u.id}
+                            onClick={() => handleToggleStatus(u)}
+                          >
+                            {u.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={busyId === u.id}
+                            onClick={() => handleDelete(u)}
+                          >
+                            Удалить
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

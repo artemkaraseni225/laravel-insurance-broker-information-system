@@ -16,6 +16,7 @@ import PolicyDetail from "./pages/PolicyDetail";
 import InsuranceTypesAdmin from './pages/admin/InsuranceTypesAdmin';
 import TariffsAdmin from './pages/admin/TariffsAdmin';
 import UsersAdmin from './pages/admin/UsersAdmin';
+import CreateUserAdmin from './pages/admin/CreateUserAdmin';
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
       >
         <Route index element={<Navigate to="users" replace />} />
         <Route path="users" element={<UsersAdmin />} />
+        <Route path="create-user" element={<CreateUserAdmin />} />
         <Route path="tariffs" element={<TariffsAdmin />} />
         <Route path="insurance-types" element={<InsuranceTypesAdmin />} />
       </Route>

@@ -51,13 +51,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
      Route::middleware('role:admin')->prefix('admin')->group(function () {
+          Route::post('/users', [AdminUserController::class, 'store']);
         Route::apiResource('insurance-types', AdminInsuranceTypeController::class)->except(['show']);
 
         Route::apiResource('tariffs', AdminTariffController::class)->except(['show']);
         Route::get('/insurance-companies', [AdminTariffController::class, 'companies']);
 
-        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
         Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus']);
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
 
         Route::get('/ping', function () {
             return response()->json(['message' => 'ok, ты администратор']);

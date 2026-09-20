@@ -31,6 +31,9 @@ function AdminLayout() {
             <NavLink to="/admin/users" className={navLinkClass}>
               Пользователи
             </NavLink>
+            <NavLink to="/admin/create-user" className={navLinkClass}>
+              Создать пользователя
+            </NavLink>
             <NavLink to="/admin/tariffs" className={navLinkClass}>
               Тарифы
             </NavLink>
