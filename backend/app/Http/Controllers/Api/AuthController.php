@@ -62,6 +62,15 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $credentials['email'])->firstOrFail();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => ['Аккаунт заблокирован. Обратитесь к администратору.'],
+            ]);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

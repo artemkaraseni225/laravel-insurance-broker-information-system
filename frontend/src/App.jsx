@@ -1,6 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import BrokerLayout from './layouts/BrokerLayout';
 import CustomerLayout from './layouts/CustomerLayout';
+import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -12,6 +13,9 @@ import BrokerDashboard from './pages/BrokerDashboard';
 import BrokerApplications from './pages/BrokerApplications';
 import PaymentPage from './pages/PaymentPage';
 import PolicyDetail from "./pages/PolicyDetail";
+import InsuranceTypesAdmin from './pages/admin/InsuranceTypesAdmin';
+import TariffsAdmin from './pages/admin/TariffsAdmin';
+import UsersAdmin from './pages/admin/UsersAdmin';
 
 function App() {
   return (
@@ -49,6 +53,22 @@ function App() {
           element={<ApplicationDetail backPath="/broker/applications" />}
         />
       </Route>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="users" replace />} />
+        <Route path="users" element={<UsersAdmin />} />
+        <Route path="tariffs" element={<TariffsAdmin />} />
+        <Route path="insurance-types" element={<InsuranceTypesAdmin />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/calculator" replace />} />
+
     </Routes>
   );
 }

@@ -24,7 +24,10 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
     async function checkAccess() {
       try {
         const { data } = await api.get('/me');
-        const role = data.user?.role?.name;
+        const roleValue = data.user?.role;
+        const role = String(
+          typeof roleValue === 'string' ? roleValue : roleValue?.name ?? data.user?.role_name ?? '',
+        ).trim().toLowerCase();
         const permittedRoles = rolesKey ? rolesKey.split(',') : [];
 
         if (!isCurrent) return;
@@ -61,7 +64,11 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   if (status === 'forbidden') {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="p-6 text-center text-destructive">
+        У вас нет доступа к этой странице.
+      </div>
+    );
   }
 
   return children;

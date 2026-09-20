@@ -14,9 +14,6 @@ class TariffSeeder extends Seeder
         $companyA = InsuranceCompany::where('name', 'СтрахПлюс')->firstOrFail();
         $companyB = InsuranceCompany::where('name', 'ГарантАсист')->firstOrFail();
 
-        // Базовый тариф — от компании А, расширенный/премиум — от компании Б.
-        // Так на одном и том же типе страхования сразу видно, что цены
-        // отличаются между компаниями, а не просто между уровнями покрытия.
         $tariffs = [
             'auto' => [
                 ['name' => 'Базовый', 'base_price' => 1200, 'company' => $companyA],

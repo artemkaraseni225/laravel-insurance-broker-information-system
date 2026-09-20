@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\InsuranceTypeController as AdminInsuranceTypeController;
+use App\Http\Controllers\Api\Admin\TariffController as AdminTariffController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\BrokerApplicationController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\ApplicationController;
@@ -32,10 +35,6 @@ Route::middleware('auth:sanctum')->group(function () {
     [DocumentController::class, 'store']
     );
 
-    Route::middleware('role:admin')->get('/admin/ping', function () {
-        return response()->json(['message' => 'ok, ты администратор']);
-    });
-
     Route::get('/documents/{document}', [DocumentController::class, 'show']);
     Route::get('/policies', [PolicyController::class, 'index']);
     Route::get('/policies/{policy}', [PolicyController::class, 'show']);
@@ -44,10 +43,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:broker')->group(function () {
 
-    Route::get('/broker/applications', [BrokerApplicationController::class, 'index']);
-    Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
-    Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
-    Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
+        Route::get('/broker/applications', [BrokerApplicationController::class, 'index']);
+        Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
+        Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
+        Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
 
+    });
+
+     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::apiResource('insurance-types', AdminInsuranceTypeController::class)->except(['show']);
+
+        Route::apiResource('tariffs', AdminTariffController::class)->except(['show']);
+        Route::get('/insurance-companies', [AdminTariffController::class, 'companies']);
+
+        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole']);
+        Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus']);
+
+        Route::get('/ping', function () {
+            return response()->json(['message' => 'ok, ты администратор']);
+        });
     });
 });
