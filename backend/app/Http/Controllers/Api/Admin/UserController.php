@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserStatusRequest;
 use App\Models\Broker;
+use App\Models\Application;
 use App\Models\Customer;
 use App\Models\Role;
 use App\Models\User;
@@ -58,7 +60,21 @@ class UserController extends Controller
     {
         abort_if($user->role?->name === 'admin', 403, 'Администратора нельзя удалить.');
 
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            if ($user->broker) {
+                Application::where('broker_id', $user->broker->id)
+                    ->where('status', ApplicationStatus::InReview->value)
+                    ->update([
+                        'broker_id' => null,
+                        'status' => ApplicationStatus::New->value,
+                    ]);
+
+                Application::where('broker_id', $user->broker->id)
+                    ->update(['broker_id' => null]);
+            }
+
+            $user->delete();
+        });
 
         return response()->json(['message' => 'Пользователь удалён']);
     }
