@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\InsuranceTypeController as AdminInsuranceTypeController;
 use App\Http\Controllers\Api\Admin\TariffController as AdminTariffController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\Admin\StatisticsController;
 use App\Http\Controllers\Api\BrokerApplicationController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\ApplicationController;
@@ -51,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
      Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::get('/statistics', [StatisticsController::class, 'index']);
           Route::post('/users', [AdminUserController::class, 'store']);
         Route::apiResource('insurance-types', AdminInsuranceTypeController::class)->except(['show']);
 
