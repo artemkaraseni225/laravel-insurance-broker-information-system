@@ -60,19 +60,19 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/40">
-      <header className="border-b bg-background">
-        <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link to="/calculator" className="font-semibold">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/80 bg-card/80">
+        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link to="/calculator" className="text-sm font-semibold tracking-tight">
             Insurance Broker
           </Link>
-          <Link to="/calculator" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link to="/calculator" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
             Калькулятор
           </Link>
         </nav>
       </header>
-      <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-6 py-10">
-        <Card className="w-full max-w-md">
+      <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-muted/20 px-4 py-8 sm:px-6 sm:py-10">
+        <Card className="w-full max-w-md shadow-md">
           <CardHeader>
             <CardTitle>Регистрация</CardTitle>
             <CardDescription>Создайте новый аккаунт</CardDescription>
@@ -150,12 +150,12 @@ function Register() {
             {errors.general && <p className="text-sm text-destructive">{errors.general[0]}</p>}
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button type="submit" className="h-10 w-full" disabled={submitting}>
                 {submitting ? 'Отправка...' : 'Зарегистрироваться'}
               </Button>
               <p className="text-sm text-muted-foreground">
                 Уже есть аккаунт?{' '}
-                <Link to="/login" className="underline">
+                  <Link to="/login" className="font-medium text-primary underline underline-offset-4">
                   Войти
                 </Link>
               </p>

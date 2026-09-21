@@ -49,38 +49,38 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  --background: #F2F7F5;
+  --foreground: #172A27;
+  --card: #FFFFFF;
+  --card-foreground: #172A27;
+  --popover: #FFFFFF;
+  --popover-foreground: #172A27;
+  --primary: #0F766E;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8F2EF;
+  --secondary-foreground: #21433E;
+  --muted: #E8F2EF;
+  --muted-foreground: #647773;
+  --accent: #CCFBF1;
+  --accent-foreground: #0D665F;
+  --destructive: #B45353;
+  --border: #D9E7E3;
+  --input: #C8DCD7;
+  --ring: #14B8A6;
+  --chart-1: #0F766E;
+  --chart-2: #14B8A6;
+  --chart-3: #D39A3B;
+  --chart-4: #66859A;
+  --chart-5: #B45353;
+  --radius: 0.7rem;
+  --sidebar: #EAF3F0;
+  --sidebar-foreground: #21433E;
+  --sidebar-primary: #0F766E;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #CCFBF1;
+  --sidebar-accent-foreground: #0D665F;
+  --sidebar-border: #D2E3DE;
+  --sidebar-ring: #14B8A6;
 }
 
 .dark {
@@ -122,9 +122,90 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-screen bg-background text-foreground antialiased;
+    background-image: radial-gradient(circle at 4% 0%, rgb(20 184 166 / 0.07), transparent 24rem), radial-gradient(circle at 96% 18%, rgb(15 118 110 / 0.045), transparent 28rem);
     }
   html {
     @apply font-sans;
     }
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
+  }
+
+  .page-header {
+    @apply flex flex-col gap-1;
+  }
+
+  .page-eyebrow {
+    @apply text-xs font-semibold tracking-wide text-primary uppercase;
+  }
+
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight text-foreground sm:text-3xl;
+  }
+
+  .page-description {
+    @apply max-w-2xl text-sm text-muted-foreground sm:text-base;
+  }
+
+  .empty-state {
+    @apply flex min-h-32 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center text-sm text-muted-foreground;
+  }
+
+  .crm-table {
+    @apply min-w-180 text-sm;
+  }
+
+  .crm-table thead {
+    @apply bg-muted/45;
+  }
+
+  .crm-table th {
+    @apply h-11 px-3 text-left text-xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase;
+  }
+
+  .crm-table td {
+    @apply px-3 py-3 align-middle whitespace-nowrap;
+  }
+
+  .crm-table tbody tr {
+    @apply border-b border-border transition-colors hover:bg-accent/35 last:border-0;
+  }
+
+  [data-slot='card'] {
+    box-shadow: 0 1px 2px rgb(23 42 39 / 0.03), 0 8px 24px rgb(23 42 39 / 0.035);
+  }
+}
+
+@layer utilities {
+  .bg-gray-50,
+  .bg-white {
+    background-color: var(--card);
+  }
+
+  .bg-gray-100 {
+    background-color: var(--muted);
+  }
+
+  .text-gray-900,
+  .text-gray-800,
+  .text-gray-700 {
+    color: var(--foreground);
+  }
+
+  .text-gray-600,
+  .text-gray-500 {
+    color: var(--muted-foreground);
+  }
+
+  .border-gray-300,
+  .border-gray-200 {
+    border-color: var(--border);
+  }
 }

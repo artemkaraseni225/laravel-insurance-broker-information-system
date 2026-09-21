@@ -144,7 +144,8 @@ function InsuranceTypesAdmin() {
         <CardContent>
           {loading && <p className="text-muted-foreground">Загрузка...</p>}
           {!loading && types.length > 0 && (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-lg border border-border/70">
+            <table className="crm-table w-full">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
                   <th className="py-2">Код</th>
@@ -174,6 +175,7 @@ function InsuranceTypesAdmin() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </CardContent>
       </Card>

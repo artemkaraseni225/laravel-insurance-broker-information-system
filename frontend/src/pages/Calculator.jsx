@@ -1,5 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  BadgeCheck,
+  BriefcaseBusiness,
+  CarFront,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  HeartPulse,
+  House,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
 import api from '../services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +91,29 @@ const EXTENDED_FIELDS = {
   ],
 };
 
+const INSURANCE_PRESENTATION = {
+  auto: {
+    title: 'Автострахование',
+    description: 'Защитите автомобиль и рассчитайте покрытие за пару минут.',
+    icon: CarFront,
+    tone: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300',
+  },
+  property: {
+    title: 'Страхование недвижимости',
+    description: 'Спокойствие для дома, квартиры и важных вещей.',
+    icon: House,
+    tone: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+  },
+  health: {
+    title: 'Медицинское страхование',
+    description: 'Поддержка здоровья с понятными условиями и расчётом.',
+    icon: HeartPulse,
+    tone: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
+  },
+};
+
 function Calculator() {
+  const calculatorRef = useRef(null);
   // Своя независимая проверка авторизации — в проекте нет общего
   // AuthContext, ProtectedRoute тоже сам стучится на /me при каждом
   // монтировании, делаем так же для единообразия
@@ -130,6 +166,9 @@ function Calculator() {
   const [uploadingDocuments, setUploadingDocuments] = useState(false);
   const [uploadedCount, setUploadedCount] = useState(0);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [customerApplications, setCustomerApplications] = useState([]);
+  const [customerPolicies, setCustomerPolicies] = useState([]);
+  const [customerDataLoading, setCustomerDataLoading] = useState(false);
 
   useEffect(() => {
     api
@@ -139,8 +178,40 @@ function Calculator() {
       .finally(() => setLoadingTypes(false));
   }, []);
 
+  useEffect(() => {
+    if (currentUser?.role?.name !== 'customer') return;
+
+    let active = true;
+    setCustomerDataLoading(true);
+
+    Promise.all([api.get('/applications'), api.get('/policies')])
+      .then(([applicationsResponse, policiesResponse]) => {
+        if (!active) return;
+        setCustomerApplications(applicationsResponse.data.applications ?? []);
+        setCustomerPolicies(policiesResponse.data.policies ?? []);
+      })
+      .finally(() => {
+        if (active) setCustomerDataLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentUser]);
+
   const selectedType = insuranceTypes.find((t) => t.code === typeCode);
   const fieldsConfig = TYPE_FIELDS[typeCode];
+  const recentApplications = customerApplications.slice(0, 4);
+  const activeApplications = customerApplications.filter((item) => !['rejected', 'approved'].includes(item.status));
+  const pendingApplications = customerApplications.filter((item) => item.status === 'in_review');
+  const pendingPayments = customerApplications.filter(
+    (item) => item.status === 'approved' && item.policy?.status !== 'paid',
+  );
+
+  function scrollToCalculator(code = '') {
+    if (code) handleTypeChange(code);
+    calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   function resetApplicationState() {
     setApplication(null);
@@ -327,18 +398,18 @@ function Calculator() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-screen overflow-hidden bg-background">
       {!currentUser && authChecked && (
-        <header className="border-b bg-background">
-          <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-            <Link to="/" className="font-semibold">
+        <header className="border-b border-border/80 bg-card/80">
+          <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+            <Link to="/" className="text-sm font-semibold tracking-tight">
               Insurance Broker
             </Link>
             <div className="flex items-center gap-4">
-              <Link to="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Link to="/login" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
                 Войти
               </Link>
-              <Link to="/register" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Link to="/register" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
                 Регистрация
               </Link>
             </div>
@@ -346,8 +417,133 @@ function Calculator() {
         </header>
       )}
 
-      <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md">
+      <main className="relative bg-[radial-gradient(circle_at_15%_0%,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),radial-gradient(circle_at_90%_12%,color-mix(in_oklch,var(--accent)_75%,transparent),transparent_28%)] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <div className="mx-auto max-w-7xl space-y-16">
+          <section className="relative overflow-hidden rounded-3xl border border-primary/15 bg-card/80 px-6 py-10 shadow-sm sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+            <div className="pointer-events-none absolute -right-24 -top-28 size-72 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+              <div className="max-w-xl">
+                <p className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-primary uppercase">
+                  <Sparkles className="size-4" /> Insurance Broker Platform
+                </p>
+                <h1 className="max-w-lg text-4xl font-semibold tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl">
+                  Страхование стало проще
+                </h1>
+                <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+                  Рассчитайте стоимость страхования, отправьте заявку брокеру и управляйте своими полисами в одном месте.
+                </p>
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <Button type="button" size="lg" onClick={() => scrollToCalculator()}>
+                    Рассчитать стоимость <ArrowRight className="size-4" />
+                  </Button>
+                  {currentUser?.role?.name === 'customer' && (
+                    <Link to="/my-applications" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                      Посмотреть мои заявки
+                    </Link>
+                  )}
+                </div>
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-2"><LockKeyhole className="size-4 text-primary" /> Понятные условия</span>
+                  <span className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" /> Поддержка брокера</span>
+                </div>
+              </div>
+
+              <div className="relative mx-auto w-full max-w-md lg:justify-self-end">
+                <div className="relative aspect-[1.1] overflow-hidden rounded-3xl border border-primary/15 bg-primary/4.5 p-5 shadow-inner sm:p-8">
+                  <div className="absolute inset-x-10 top-8 h-24 rounded-full bg-primary/10 blur-2xl" />
+                  <div className="absolute right-8 top-7 flex size-14 items-center justify-center rounded-2xl border border-primary/15 bg-card text-primary shadow-sm"><ShieldCheck className="size-7" /></div>
+                  <div className="absolute bottom-12 left-8 flex size-20 items-center justify-center rounded-3xl border border-sky-200 bg-sky-50 text-sky-700 shadow-sm dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-300"><CarFront className="size-10" /></div>
+                  <div className="absolute bottom-10 right-12 flex size-24 items-center justify-center rounded-3xl border border-amber-200 bg-amber-50 text-amber-700 shadow-sm dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-300"><House className="size-12" /></div>
+                  <div className="absolute left-1/2 top-1/2 flex size-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-primary/20 bg-card text-primary shadow-lg"><FileText className="size-10" /></div>
+                  <div className="absolute bottom-5 left-1/2 h-px w-3/4 -translate-x-1/2 bg-primary/15" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="page-header">
+              <p className="page-eyebrow">Быстрый старт</p>
+              <h2 className="page-title">Выберите тип страхования</h2>
+              <p className="page-description">Рассчитайте ориентировочную стоимость и создайте заявку.</p>
+            </div>
+            <div className="grid gap-5 md:grid-cols-3">
+              {Object.entries(INSURANCE_PRESENTATION).map(([code, item]) => {
+                const Icon = item.icon;
+                const available = insuranceTypes.some((type) => type.code === code);
+
+                return (
+                  <Card key={code} className="group relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:border-primary/35 hover:shadow-md">
+                    <CardContent className="flex h-full flex-col p-6">
+                      <div className={`mb-6 flex size-14 items-center justify-center rounded-2xl ${item.tone}`}>
+                        <Icon className="size-7" strokeWidth={1.7} />
+                      </div>
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardDescription className="mt-2 min-h-12 leading-6">{item.description}</CardDescription>
+                      <Button type="button" variant="outline" className="mt-7 w-full justify-between" disabled={!available} onClick={() => scrollToCalculator(code)}>
+                        {available ? 'Рассчитать' : 'Недоступно'} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+
+          {currentUser?.role?.name === 'customer' && (
+            <>
+              <section className="space-y-6">
+                <div className="page-header">
+                  <p className="page-eyebrow">Ваше пространство</p>
+                  <h2 className="page-title">Всё важное под рукой</h2>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    { label: 'Активные заявки', value: activeApplications.length, icon: FileText },
+                    { label: 'Ожидают решения', value: pendingApplications.length, icon: Clock3 },
+                    { label: 'Активные полисы', value: customerPolicies.length, icon: BadgeCheck },
+                    { label: 'Ожидают оплаты', value: pendingPayments.length, icon: BriefcaseBusiness },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <Card key={label} className="border-border/80 shadow-xs">
+                      <CardContent className="flex items-center gap-4 p-5">
+                        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="size-5" /></span>
+                        <div className="min-w-0"><p className="text-2xl font-semibold tracking-tight">{customerDataLoading ? '—' : value}</p><p className="truncate text-sm text-muted-foreground">{label}</p></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+
+              <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+                <Card>
+                  <CardHeader className="flex flex-row items-start justify-between gap-4">
+                    <div><CardTitle>Последние заявки</CardTitle><CardDescription>Следите за статусом обращений к брокеру.</CardDescription></div>
+                    <Link to="/my-applications" className="shrink-0 text-sm font-medium text-primary hover:underline">Все заявки</Link>
+                  </CardHeader>
+                  <CardContent>
+                    {customerDataLoading ? <p className="empty-state">Загрузка заявок...</p> : recentApplications.length === 0 ? (
+                      <div className="empty-state flex-col gap-3"><FileText className="size-8 text-primary/60" /><div><p className="font-medium text-foreground">У вас пока нет заявок</p><p className="mt-1">Начните с расчёта подходящего покрытия.</p></div><Button type="button" size="sm" onClick={() => scrollToCalculator()}>Создать заявку</Button></div>
+                    ) : (
+                      <div className="divide-y divide-border/70">
+                        {recentApplications.map((item) => {
+                          const status = { new: 'Новая', in_review: 'На рассмотрении', approved: 'Одобрена', rejected: 'Отклонена' }[item.status] ?? item.status;
+                          const amount = item.insurance_data?.insurance_sum ?? item.insurance_data?.property_value ?? '—';
+                          return <Link key={item.id} to={`/my-applications/${item.id}`} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0 hover:text-primary"><div className="min-w-0"><p className="truncate font-medium text-foreground">{item.insurance_type?.name ?? 'Страхование'}</p><p className="mt-1 text-xs text-muted-foreground">Заявка №{item.id} · {item.created_at ? new Date(item.created_at).toLocaleDateString('ru-RU') : 'Дата не указана'}</p></div><div className="flex shrink-0 items-end gap-3"><div className="text-right"><p className="text-sm font-medium text-foreground">{item.calculated_price ?? '—'} MDL</p><p className="mt-1 text-xs text-muted-foreground">Сумма: {amount}</p></div><span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">{status}</span><ArrowRight className="hidden size-4 text-muted-foreground sm:block" /></div></Link>;
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card className="bg-primary text-primary-foreground shadow-md">
+                  <CardContent className="flex h-full flex-col justify-between gap-8 p-6 sm:p-7"><div><span className="mb-5 flex size-11 items-center justify-center rounded-xl bg-white/15"><CheckCircle2 className="size-5" /></span><h3 className="text-xl font-semibold">Всё под контролем</h3><p className="mt-2 text-sm leading-6 text-primary-foreground/75">От первого расчёта до готового полиса в одном понятном пространстве.</p></div><div className="space-y-3 text-sm"><span className="flex items-center gap-3"><Sparkles className="size-4" /> Онлайн-расчёт</span><span className="flex items-center gap-3"><BriefcaseBusiness className="size-4" /> Работа с брокером</span><span className="flex items-center gap-3"><BadgeCheck className="size-4" /> Управление полисами</span></div></CardContent>
+                </Card>
+              </section>
+            </>
+          )}
+
+          <section ref={calculatorRef} className="scroll-mt-8">
+            <div className="mb-6 page-header"><p className="page-eyebrow">Точный расчёт</p><h2 className="page-title">Рассчитайте стоимость</h2><p className="page-description">Укажите несколько параметров, чтобы получить ориентировочную стоимость покрытия.</p></div>
+            <Card className="mx-auto w-full max-w-2xl shadow-md">
           <CardHeader>
             <CardTitle>Калькулятор страховки</CardTitle>
             <CardDescription>Выберите тип страхования и параметры</CardDescription>
@@ -499,9 +695,9 @@ function Calculator() {
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             {result && (
-              <div className="rounded-md border bg-muted p-4 text-center">
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-center">
                 <p className="text-sm text-muted-foreground">Итоговая стоимость</p>
-                <p className="text-2xl font-bold">{result.calculated_price}</p>
+                <p className="text-3xl font-semibold tracking-tight text-primary">{result.calculated_price}</p>
               </div>
             )}
 
@@ -512,11 +708,11 @@ function Calculator() {
                     {!currentUser && (
                       <p className="text-sm text-muted-foreground">
                         Чтобы оформить полноценную заявку, нужно{' '}
-                        <Link to="/login" className="underline">
+                          <Link to="/login" className="font-medium text-primary underline underline-offset-4">
                           войти
                         </Link>{' '}
                         или{' '}
-                        <Link to="/register" className="underline">
+                        <Link to="/register" className="font-medium text-primary underline underline-offset-4">
                           зарегистрироваться
                         </Link>
                         .
@@ -592,7 +788,7 @@ function Calculator() {
                       </div>
                     ))}
 
-                    <div className="flex items-center gap-2 rounded-md border bg-background p-3">
+                    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 p-3">
                       <Checkbox
                         id="personal_data_consent"
                         checked={!!extendedData.personal_data_consent}
@@ -650,7 +846,7 @@ function Calculator() {
 
                 {application ? (
                   <div className="space-y-1">
-                    <p className="text-sm text-green-600">
+                    <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
                       Заявка №{application.id} создана, статус: {application.status}.
                       {uploadingDocuments && ' Загружаем документы...'}
                       {!uploadingDocuments && files.length > 0 && ` Загружено документов: ${uploadedCount} из ${files.length}.`}
@@ -685,6 +881,8 @@ function Calculator() {
             </CardFooter>
           </form>
         </Card>
+          </section>
+        </div>
       </main>
     </div>
   );

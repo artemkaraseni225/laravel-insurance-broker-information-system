@@ -21,10 +21,10 @@ const STATUS_LABELS = {
 };
 
 const STATUS_STYLES = {
-  new: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
-  in_review: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
-  approved: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+  new: 'border-[#CBDCE7] bg-[#EFF5F8] text-[#47687C]',
+  in_review: 'border-[#E7D5A8] bg-[#FCF6E8] text-[#8A6828]',
+  approved: 'border-[#BBDCCF] bg-[#EDF8F2] text-[#327155]',
+  rejected: 'border-[#E6C7C7] bg-[#FBF0F0] text-[#985252]',
 };
 
 function BrokerDashboard() {
@@ -62,11 +62,11 @@ function BrokerDashboard() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 p-6">
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium text-muted-foreground">Рабочее пространство брокера</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Заявки клиентов</h1>
-        <p className="text-muted-foreground">Проверьте заявки и примите решение по каждой из них.</p>
+    <main className="space-y-8">
+      <div className="page-header">
+        <p className="page-eyebrow">Рабочее пространство брокера</p>
+        <h1 className="page-title">Заявки клиентов</h1>
+        <p className="page-description">Проверьте заявки и примите решение по каждой из них.</p>
       </div>
 
       <Card>
@@ -77,11 +77,11 @@ function BrokerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading && <p className="py-8 text-center text-muted-foreground">Загрузка заявок...</p>}
+          {loading && <p className="empty-state">Загрузка заявок...</p>}
           {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
 
           {!loading && applications.length === 0 && (
-            <p className="py-8 text-center text-muted-foreground">Новых заявок пока нет.</p>
+            <p className="empty-state">Новых заявок пока нет.</p>
           )}
 
           {!loading && applications.length > 0 && (

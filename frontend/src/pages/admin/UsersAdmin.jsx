@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 function UsersAdmin() {
   const [users, setUsers] = useState([]);
@@ -71,40 +73,39 @@ function UsersAdmin() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div className="page-shell max-w-6xl">
+      <div className="page-header">
+        <p className="page-eyebrow">Управление доступом</p>
+        <h1 className="page-title">Пользователи</h1>
+        <p className="page-description">Управляйте статусами, ролями и доступом пользователей системы.</p>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Пользователи</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && <p className="text-muted-foreground">Загрузка...</p>}
-          {error && <p className="text-destructive">{error}</p>}
+          {loading && <p className="empty-state">Загрузка пользователей...</p>}
+          {error && <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
 
           {!loading && users.length > 0 && (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="py-2">Имя</th>
-                  <th className="py-2">Email</th>
-                  <th className="py-2">Роль</th>
-                  <th className="py-2">Статус</th>
-                  <th className="py-2">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="crm-table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Имя</TableHead><TableHead>Email</TableHead><TableHead>Роль</TableHead><TableHead>Статус</TableHead><TableHead>Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {users.map((u) => (
-                  <tr key={u.id} className="border-b last:border-0">
-                    <td className="py-2">{u.name}</td>
-                    <td className="py-2">{u.email}</td>
-                    <td className="py-2">
+                  <TableRow key={u.id}>
+                    <TableCell className="font-medium">{u.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                    <TableCell>
                       {u.role?.name === 'broker' ? 'Брокер' : u.role?.name === 'customer' ? 'Пользователь' : 'Администратор'}
-                    </td>
-                    <td className="py-2">
-                      {u.status === 'active' ? 'Активен' : 'Заблокирован'}
-                    </td>
-                    <td className="py-2">
+                    </TableCell>
+                    <TableCell><Badge variant={u.status === 'active' ? 'secondary' : 'destructive'}>{u.status === 'active' ? 'Активен' : 'Заблокирован'}</Badge></TableCell>
+                    <TableCell>
                       {u.role?.name !== 'admin' && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             size="sm"
                             variant={u.status === 'active' ? 'destructive' : 'default'}
@@ -123,12 +124,13 @@ function UsersAdmin() {
                           </Button>
                         </div>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
+          {!loading && !error && users.length === 0 && <p className="empty-state">Пользователей пока нет.</p>}
         </CardContent>
       </Card>
     </div>
