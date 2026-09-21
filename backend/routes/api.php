@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AI\AiTestController;
 use App\Http\Controllers\Api\Admin\InsuranceTypeController as AdminInsuranceTypeController;
 use App\Http\Controllers\Api\Admin\TariffController as AdminTariffController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
@@ -67,3 +68,5 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 });
+
+Route::get('/ai/test', [AiTestController::class, 'test']);

@@ -86,7 +86,7 @@ function BrokerApplications() {
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <CardTitle>Заявки в работе</CardTitle>
-            <CardDescription>{applications.length} заявок назначено вам</CardDescription>
+            <CardDescription>{applications.length} заявок назначено вам. Нажмите на номер заявки для просмотра деталей.</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2" aria-label="Фильтр по статусу">
             {FILTERS.map(({ value, label }) => (
