@@ -12,6 +12,9 @@ const initialForm = {
   password: '',
   password_confirmation: '',
   role: 'broker',
+  phone: '',
+  address: '',
+  date_of_birth: '',
 };
 
 function CreateUserAdmin() {
@@ -31,7 +34,14 @@ function CreateUserAdmin() {
     setError(null);
 
     try {
-      await api.post('/admin/users', form);
+      const payload = { ...form };
+      if (payload.role === 'broker') {
+        delete payload.phone;
+        delete payload.address;
+        delete payload.date_of_birth;
+      }
+
+      await api.post('/admin/users', payload);
       setForm(initialForm);
       setMessage('Пользователь успешно создан.');
     } catch (requestError) {
@@ -61,16 +71,48 @@ function CreateUserAdmin() {
             </div>
             <div className="space-y-2">
               <Label>Тип аккаунта</Label>
-              <Select value={form.role} onValueChange={(role) => setForm((current) => ({ ...current, role }))}>
+              <Select
+                value={form.role}
+                onValueChange={(role) => setForm((current) => ({
+                  ...current,
+                  role,
+                  ...(role === 'broker'
+                    ? { phone: '', address: '', date_of_birth: '' }
+                    : {}),
+                }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="broker">Брокер</SelectItem>
-                  <SelectItem value="customer">Пользователь</SelectItem>
+                  <SelectItem value="customer">Клиент</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {form.role === 'customer' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Телефон</Label>
+                  <Input id="phone" name="phone" value={form.phone} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Адрес</Label>
+                  <Input id="address" name="address" value={form.address} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="date_of_birth">Дата рождения</Label>
+                  <Input
+                    id="date_of_birth"
+                    type="date"
+                    name="date_of_birth"
+                    value={form.date_of_birth}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="password">Пароль</Label>
               <Input id="password" name="password" type="password" minLength="8" value={form.password} onChange={handleChange} required />

@@ -19,6 +19,9 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', Rule::in(['customer', 'broker'])],
+            'phone' => ['exclude_unless:role,customer', 'required', 'string', 'max:30'],
+            'address' => ['exclude_unless:role,customer', 'required', 'string', 'max:500'],
+            'date_of_birth' => ['exclude_unless:role,customer', 'required', 'date'],
         ];
     }
 }

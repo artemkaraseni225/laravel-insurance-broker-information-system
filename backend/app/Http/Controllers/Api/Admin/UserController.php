@@ -34,7 +34,12 @@ class UserController extends Controller
             if ($data['role'] === 'broker') {
                 Broker::create(['user_id' => $user->id, 'commission_rate' => 0]);
             } else {
-                Customer::create(['user_id' => $user->id]);
+                Customer::create([
+                    'user_id' => $user->id,
+                    'phone' => $data['phone'],
+                    'address' => $data['address'],
+                    'date_of_birth' => $data['date_of_birth'],
+                ]);
             }
 
             return $user;
