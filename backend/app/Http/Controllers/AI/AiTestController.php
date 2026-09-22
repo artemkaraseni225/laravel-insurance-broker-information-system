@@ -11,7 +11,7 @@ class AiTestController extends Controller
     public function test(AiAssistantService $assistant): JsonResponse
     {
         $response = $assistant->ask(
-            'Explain in one short sentence what an insurance broker does.'
+            'Explain in one short sentence what is "insurance broker" in Russian language.'
         );
 
         return response()->json([
