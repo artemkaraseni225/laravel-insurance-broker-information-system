@@ -35,7 +35,7 @@ class AiRiskAnalysisService
             'insurance_type' => $application->insuranceType?->name,
             'insurance_type_code' => $application->insuranceType?->code,
             'tariff' => $application->tariff?->name,
-            'calculated_price' => $application->calculated_price,
+            'calculated_price_mdl' => $application->calculated_price,
         ];
 
         if ($application->customer?->date_of_birth) {
@@ -108,6 +108,14 @@ class AiRiskAnalysisService
 
 Верни ТОЛЬКО валидный JSON без Markdown и без дополнительного текста.
 
+ВАЖНО О ВАЛЮТЕ:
+
+1. Все денежные значения заявки указаны в MDL (молдавских леях).
+2. Не конвертируй суммы в RUB, USD, EUR или любую другую валюту.
+3. Если в рекомендации или факторах упоминается денежная сумма,
+   обязательно указывай её в MDL.
+4. Не предполагай другую валюту, даже если сумма выглядит необычно.
+
 Формат ответа:
 
 {
@@ -119,6 +127,13 @@ class AiRiskAnalysisService
     "recommendation": "Краткая рекомендация брокеру.",
     "confidence": 0.85
 }
+
+Язык ответа:
+
+- Все текстовые поля ответа должны быть написаны ТОЛЬКО на русском языке.
+- Это относится к полям "factors" и "recommendation".
+- Не используй английский язык в текстовых полях.
+- Технические значения "LOW", "MEDIUM", "HIGH" должны оставаться на английском языке.
 
 Требования:
 

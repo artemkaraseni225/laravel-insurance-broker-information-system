@@ -69,4 +69,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::get('/ai/test', [AiTestController::class, 'test']);
+
+Route::middleware('auth:sanctum')->get(
+    '/applications/{application}/risk-analysis',
+    [AiTestController::class, 'riskAnalysis']
+);

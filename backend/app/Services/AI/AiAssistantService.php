@@ -1,31 +1,69 @@
 <?php
 
-// Занимется отправкой HTTP запросов к API Groq и обработкой ответов.
-
 namespace App\Services\AI;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 class AiAssistantService
 {
     public function ask(string $prompt): string
     {
-        $response = Http::withToken(config('services.groq.api_key'))
-            ->post(config('services.groq.url') . '/chat/completions', [
-                'model' => config('services.groq.model'),
-
-                'messages' => [
+        try {
+            $response = Http::withToken(
+                config('services.groq.api_key')
+            )
+                ->timeout(30)
+                ->connectTimeout(10)
+                ->post(
+                    config('services.groq.url') . '/chat/completions',
                     [
-                        'role' => 'user',
-                        'content' => $prompt,
-                    ],
-                ],
+                        'model' => config('services.groq.model'),
 
-                'temperature' => 0.2,
-            ]);
+                        'messages' => [
+                            [
+                                'role' => 'user',
+                                'content' => $prompt,
+                            ],
+                        ],
 
-        $response->throw();
+                        'temperature' => 0.2,
 
-        return $response->json('choices.0.message.content');
+                        'response_format' => [
+                            'type' => 'json_object',
+                        ],
+                    ]
+                );
+
+            $response->throw();
+
+            $content = $response->json(
+                'choices.0.message.content'
+            );
+
+            if (!is_string($content) || trim($content) === '') {
+                throw new RuntimeException(
+                    'Groq API returned an empty response.'
+                );
+            }
+
+            return $content;
+        } catch (ConnectionException $e) {
+            throw new RuntimeException(
+                'Unable to connect to Groq API.',
+                0,
+                $e
+            );
+        } catch (RequestException $e) {
+            throw new RuntimeException(
+                'Groq API returned an HTTP error: '
+                . $e->response->status(),
+                0,
+                $e
+            );
+        }
     }
 }
+
