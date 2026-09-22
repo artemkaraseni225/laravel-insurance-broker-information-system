@@ -71,10 +71,19 @@ class UserController extends Controller
 
                 Application::where('broker_id', $user->broker->id)
                     ->update(['broker_id' => null]);
+                    
+                $user->broker->delete();
+            }
+
+            if ($user->customer) {
+           
+            $user->customer?->delete();
+
             }
 
             $user->delete();
         });
+
 
         return response()->json(['message' => 'Пользователь удалён']);
     }

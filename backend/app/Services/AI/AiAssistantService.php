@@ -1,5 +1,7 @@
 <?php
 
+// Занимется отправкой HTTP запросов к API Groq и обработкой ответов.
+
 namespace App\Services\AI;
 
 use Illuminate\Support\Facades\Http;

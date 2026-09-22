@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Broker extends Model
 {
+    use SoftDeletes;
+    
     protected $fillable = ['user_id', 'commission_rate'];
 
     public function user()
