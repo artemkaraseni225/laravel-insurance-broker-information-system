@@ -15,6 +15,7 @@ const STATUS_LABELS = {
   in_review: 'На рассмотрении',
   approved: 'Одобрена',
   rejected: 'Отклонена',
+  cancelled: 'Отменена',
 };
 
 const STATUS_STYLES = {
@@ -22,6 +23,7 @@ const STATUS_STYLES = {
   rejected: 'border-[#E6C7C7] bg-[#FBF0F0] text-[#985252]',
   new: 'border-[#CBDCE7] bg-[#EFF5F8] text-[#47687C]',
   in_review: 'border-[#E7D5A8] bg-[#FCF6E8] text-[#8A6828]',
+  cancelled: 'border-[#D6D6D6] bg-[#F4F4F4] text-[#707070]',
 };
 
 function MyApplications() {

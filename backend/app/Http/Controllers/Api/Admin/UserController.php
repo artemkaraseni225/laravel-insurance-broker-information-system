@@ -13,6 +13,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -56,11 +57,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         abort_if($user->role?->name === 'admin', 403, 'Администратора нельзя удалить.');
+        $adminId = $request->user()->id;
 
-        DB::transaction(function () use ($user) {
+        DB::transaction(function () use ($user, $adminId) {
             if ($user->broker) {
                 Application::where('broker_id', $user->broker->id)
                     ->where('status', ApplicationStatus::InReview->value)
@@ -76,8 +78,22 @@ class UserController extends Controller
             }
 
             if ($user->customer) {
-           
-            $user->customer?->delete();
+                $applications = Application::where('customer_id', $user->customer->id)
+                    ->where('status', '!=', ApplicationStatus::Cancelled->value)
+                    ->get();
+
+                foreach ($applications as $application) {
+                    $fromStatus = $application->status?->value;
+                    $application->update(['status' => ApplicationStatus::Cancelled]);
+                    $application->statusHistories()->create([
+                        'from_status' => $fromStatus,
+                        'to_status' => ApplicationStatus::Cancelled->value,
+                        'changed_by' => $adminId,
+                        'note' => 'Заявка отменена из-за удаления клиента администратором',
+                    ]);
+                }
+
+                $user->customer->delete();
 
             }
 

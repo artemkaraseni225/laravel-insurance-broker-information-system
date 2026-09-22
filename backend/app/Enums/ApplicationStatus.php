@@ -8,4 +8,5 @@ enum ApplicationStatus: string
     case InReview = 'in_review';
     case Approved = 'approved';
     case Rejected = 'rejected';
+    case Cancelled = 'cancelled';
 }

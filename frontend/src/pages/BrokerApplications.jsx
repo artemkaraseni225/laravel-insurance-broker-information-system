@@ -18,6 +18,7 @@ const STATUS_LABELS = {
   in_review: 'На рассмотрении',
   approved: 'Одобрена',
   rejected: 'Отклонена',
+  cancelled: 'Отменена',
 };
 
 const STATUS_STYLES = {
@@ -25,6 +26,7 @@ const STATUS_STYLES = {
   in_review: 'border-[#E7D5A8] bg-[#FCF6E8] text-[#8A6828]',
   approved: 'border-[#BBDCCF] bg-[#EDF8F2] text-[#327155]',
   rejected: 'border-[#E6C7C7] bg-[#FBF0F0] text-[#985252]',
+  cancelled: 'border-[#D6D6D6] bg-[#F4F4F4] text-[#707070]',
 };
 
 const FILTERS = [
@@ -32,6 +34,7 @@ const FILTERS = [
   { value: 'in_review', label: 'На рассмотрении' },
   { value: 'approved', label: 'Одобренные' },
   { value: 'rejected', label: 'Отклонённые' },
+  { value: 'cancelled', label: 'Отмененные' },
 ];
 
 function BrokerApplications() {
@@ -72,7 +75,9 @@ function BrokerApplications() {
   }
 
   const visibleApplications =
-    filter === 'all' ? applications : applications.filter(({ status }) => status === filter);
+    filter === 'all'
+      ? applications.filter(({ status }) => status !== 'cancelled')
+      : applications.filter(({ status }) => status === filter);
 
   return (
     <main className="space-y-8">
@@ -86,7 +91,7 @@ function BrokerApplications() {
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <CardTitle>Заявки в работе</CardTitle>
-            <CardDescription>{applications.length} заявок назначено вам. Нажмите на номер заявки для просмотра деталей.</CardDescription>
+            <CardDescription>{applications.filter(({ status }) => status !== 'cancelled').length} заявок назначено вам. Нажмите на номер заявки для просмотра деталей.</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2" aria-label="Фильтр по статусу">
             {FILTERS.map(({ value, label }) => (

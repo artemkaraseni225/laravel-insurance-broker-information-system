@@ -14,6 +14,7 @@ const STATUS_LABELS = {
   in_review: 'На рассмотрении',
   approved: 'Одобрена',
   rejected: 'Отклонена',
+  cancelled: 'Отменена',
 };
 
 const FIELD_LABELS = {

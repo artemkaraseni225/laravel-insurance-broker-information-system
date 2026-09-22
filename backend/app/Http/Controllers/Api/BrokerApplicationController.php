@@ -19,6 +19,7 @@ class BrokerApplicationController extends Controller
 
         $query = Application::query()
             ->whereNull('broker_id')
+            ->where('status', '!=', ApplicationStatus::Cancelled->value)
             ->with(['customer.user', 'insuranceType', 'tariff.company']);
 
         if ($status = $request->query('status')) {
