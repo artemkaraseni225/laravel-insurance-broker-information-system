@@ -49,12 +49,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
         Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
         Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
+        Route::get('/applications/{application}/risk-analysis',[AiTestController::class, 'riskAnalysis']);
 
     });
 
-     Route::middleware('role:admin')->prefix('admin')->group(function () {
+    Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/statistics', [StatisticsController::class, 'index']);
-          Route::post('/users', [AdminUserController::class, 'store']);
+        Route::post('/users', [AdminUserController::class, 'store']);
         Route::apiResource('insurance-types', AdminInsuranceTypeController::class)->except(['show']);
 
         Route::apiResource('tariffs', AdminTariffController::class)->except(['show']);
@@ -70,7 +71,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::middleware('auth:sanctum')->get(
-    '/applications/{application}/risk-analysis',
-    [AiTestController::class, 'riskAnalysis']
-);
+
