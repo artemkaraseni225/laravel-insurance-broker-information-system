@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{user}', [UserController::class, 'show']);
 
-    Route::post('/applications', [ApplicationController::class, 'store']);
+    Route::post('/applications', [ApplicationController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/applications', [ApplicationController::class, 'index']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show']);
     Route::post('/applications/{application}/pay', [ApplicationController::class, 'pay']);
