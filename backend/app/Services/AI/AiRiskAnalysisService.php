@@ -125,7 +125,7 @@ class AiRiskAnalysisService
         "краткий фактор 2"
     ],
     "recommendation": "Краткая рекомендация брокеру.",
-    "confidence": 0.85
+    "data_quality_score": 0.85
 }
 
 Язык ответа:
@@ -150,10 +150,10 @@ recommendation:
 - не должна содержать окончательного решения approve/reject;
 - брокер самостоятельно принимает окончательное решение.
 
-confidence:
-- число от 0 до 1;
-- оцени, насколько полно и качественно заполнены входные данные для принятия объективного решения. Если данных слишком мало или они размыты, ставь низкий балл.
-- confidence НЕ является вероятностью наступления страхового случая.
+"data_quality_score": число от 0.1 до 1.0. 
+Оцени семантическое качество и конкретику предоставленных данных. 
+Ставь 1.0, если данные исчерпывающие (точные цифры стажа, характеристик авто). 
+Ставь ниже 0.5, если данные размыты (например, "большой стаж" вместо точного количества лет) и для точной оценки риска требуется запросить у клиента детали.
 
 Данные заявки:
 
@@ -234,19 +234,19 @@ PROMPT;
         }
 
         if (
-            !isset($result['confidence']) ||
-            !is_numeric($result['confidence'])
+            !isset($result['data_quality_score']) ||
+            !is_numeric($result['data_quality_score'])
         ) {
             throw new RuntimeException(
-                'AI response does not contain valid confidence.'
+                'AI response does not contain valid data quality score.'
             );
         }
 
-        $confidence = (float) $result['confidence'];
+        $dataQualityScore = (float) $result['data_quality_score'];
 
-        if ($confidence < 0 || $confidence > 1) {
+        if ($dataQualityScore < 0.1 || $dataQualityScore > 1.0) {
             throw new RuntimeException(
-                'AI confidence must be between 0 and 1.'
+                'AI data quality score must be between 0.1 and 1.0.'
             );
         }
 
@@ -254,7 +254,7 @@ PROMPT;
             'risk_level' => $riskLevel,
             'factors' => $result['factors'],
             'recommendation' => $result['recommendation'],
-            'confidence' => $confidence,
+            'data_quality_score' => $dataQualityScore,
         ];
     }
 }
