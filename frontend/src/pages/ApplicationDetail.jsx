@@ -301,7 +301,7 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
           </Dialog>
 
           <Dialog open={riskAnalysisOpen} onOpenChange={setRiskAnalysisOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>AI-анализ риска</DialogTitle>
               </DialogHeader>
