@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AI\AiController;
+use App\Http\Controllers\AI\AIController;
 use App\Http\Controllers\Api\Admin\InsuranceTypeController as AdminInsuranceTypeController;
 use App\Http\Controllers\Api\Admin\TariffController as AdminTariffController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
         Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
         Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
-        Route::get('/applications/{application}/risk-analysis',[AiController::class, 'riskAnalysis']);
+        Route::middleware(['throttle:10,1'])->get('/applications/{application}/risk-analysis',[AIController::class, 'riskAnalysis']);
 
     });
 

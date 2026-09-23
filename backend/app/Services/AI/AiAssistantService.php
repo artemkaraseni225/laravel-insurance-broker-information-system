@@ -52,13 +52,13 @@ class AiAssistantService
             return $content;
         } catch (ConnectionException $e) {
             throw new RuntimeException(
-                'Unable to connect to Groq API.',
+                'AI service is temporarily unavailable. Please try again later.',
                 0,
                 $e
             );
         } catch (RequestException $e) {
             throw new RuntimeException(
-                'Groq API returned an HTTP error: '
+                'AI service returned an error: '
                 . $e->response->status(),
                 0,
                 $e
