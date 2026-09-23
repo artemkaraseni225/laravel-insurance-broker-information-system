@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import api from '../services/api';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
@@ -124,77 +123,73 @@ function ClientDataVerification({ insuranceTypeCode, applicationData }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Проверка данных клиента</CardTitle>
-        <CardDescription>
-          Вставьте сообщение клиента, чтобы сравнить извлечённые AI данные с данными заявки. Заявка не будет изменена.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Вставьте сообщение клиента, чтобы сравнить извлечённые AI данные с данными заявки. Заявка не будет изменена.
+      </p>
+
+      <div className="space-y-2">
+        <label htmlFor="client-message" className="text-sm font-medium">Сообщение клиента</label>
+        <Textarea
+          id="client-message"
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          placeholder="Вставьте сообщение клиента…"
+          disabled={loading}
+          maxLength={2000}
+          className="min-h-32 resize-y"
+        />
+        <p className="text-xs text-muted-foreground">{message.length}/2000</p>
+      </div>
+
+      {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+
+      <Button type="button" onClick={extractData} disabled={loading} aria-busy={loading}>
+        {loading && <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />}
+        {loading ? 'Извлекаем данные…' : 'Извлечь данные'}
+      </Button>
+
+      {extractedData && (
         <div className="space-y-2">
-          <label htmlFor="client-message" className="text-sm font-medium">Сообщение клиента</label>
-          <Textarea
-            id="client-message"
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            placeholder="Вставьте сообщение клиента…"
-            disabled={loading}
-            maxLength={2000}
-            className="min-h-32 resize-y"
-          />
-          <p className="text-xs text-muted-foreground">{message.length}/2000</p>
+          <h3 className="font-medium">Результат проверки</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Поле</TableHead>
+                <TableHead>Данные заявки</TableHead>
+                <TableHead>Данные клиента</TableHead>
+                <TableHead>Результат</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fields.map((field) => {
+                const applicationValue = applicationData?.[field.applicationKey ?? field.key];
+                const clientValue = (field.clientKeys ?? [field.key])
+                  .map((key) => extractedData[key])
+                  .find((value) => !isMissing(value));
+                const canCompare = !isMissing(applicationValue) && !isMissing(clientValue);
+                const matches = canCompare && valuesMatch(applicationValue, clientValue);
+
+                return (
+                  <TableRow key={field.key}>
+                    <TableCell className="whitespace-normal font-medium">{field.label}</TableCell>
+                    <TableCell className="whitespace-normal">{formatValue(field.key, applicationValue)}</TableCell>
+                    <TableCell className="whitespace-normal">{formatValue(field.key, clientValue)}</TableCell>
+                    <TableCell className="whitespace-normal">
+                      {canCompare ? (
+                        <span className={matches ? 'text-emerald-700' : 'text-amber-700'}>
+                          {matches ? '✓ Совпадает' : '⚠ Не совпадает'}
+                        </span>
+                      ) : 'Не указано'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
-
-        {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-
-        <Button type="button" onClick={extractData} disabled={loading} aria-busy={loading}>
-          {loading && <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-          {loading ? 'Извлекаем данные…' : 'Извлечь данные'}
-        </Button>
-
-        {extractedData && (
-          <div className="space-y-2">
-            <h3 className="font-medium">Сравнение данных</h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Поле</TableHead>
-                  <TableHead>Данные заявки</TableHead>
-                  <TableHead>Данные клиента</TableHead>
-                  <TableHead>Результат</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {fields.map((field) => {
-                  const applicationValue = applicationData?.[field.applicationKey ?? field.key];
-                  const clientValue = (field.clientKeys ?? [field.key])
-                    .map((key) => extractedData[key])
-                    .find((value) => !isMissing(value));
-                  const canCompare = !isMissing(applicationValue) && !isMissing(clientValue);
-                  const matches = canCompare && valuesMatch(applicationValue, clientValue);
-
-                  return (
-                    <TableRow key={field.key}>
-                      <TableCell className="whitespace-normal font-medium">{field.label}</TableCell>
-                      <TableCell className="whitespace-normal">{formatValue(field.key, applicationValue)}</TableCell>
-                      <TableCell className="whitespace-normal">{formatValue(field.key, clientValue)}</TableCell>
-                      <TableCell className="whitespace-normal">
-                        {canCompare ? (
-                          <span className={matches ? 'text-emerald-700' : 'text-amber-700'}>
-                            {matches ? '✓ Совпадает' : '⚠ Не совпадает'}
-                          </span>
-                        ) : 'Не указано'}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
 

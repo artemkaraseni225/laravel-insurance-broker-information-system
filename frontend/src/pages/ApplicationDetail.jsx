@@ -73,6 +73,7 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
   const [riskAnalysisLoading, setRiskAnalysisLoading] = useState(false);
   const [riskAnalysisError, setRiskAnalysisError] = useState(null);
   const [riskAnalysisOpen, setRiskAnalysisOpen] = useState(false);
+  const [clientDataVerificationOpen, setClientDataVerificationOpen] = useState(false);
 
   async function runRiskAnalysis() {
     setRiskAnalysisError(null);
@@ -203,20 +204,32 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
               {application.tariff ? ` — ${application.tariff.name}` : ''}
             </CardDescription>
           </div>
-          {showRiskAnalysis && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={runRiskAnalysis}
-              disabled={riskAnalysisLoading}
-              aria-busy={riskAnalysisLoading}
-              className="bg-green-50/80 hover:bg-green-100 text-green-950 border-green-200/80 shadow-none transition-colors"
-            >
-              {riskAnalysisLoading && (
-                <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          {(showRiskAnalysis || showClientDataVerification) && (
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+              {showRiskAnalysis && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={runRiskAnalysis}
+                  disabled={riskAnalysisLoading}
+                  aria-busy={riskAnalysisLoading}
+                  className="bg-green-50/80 hover:bg-green-100 text-green-950 border-green-200/80 shadow-none transition-colors"
+                >
+                  {riskAnalysisLoading && (
+                    <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  )}
+                  {riskAnalysisLoading ? 'Выполняется анализ...' : 'Выполнить AI-анализ'}
+                </Button>
               )}
-              {riskAnalysisLoading ? 'Выполняется анализ...' : 'Выполнить AI-анализ'}
-            </Button>
+              {showClientDataVerification && (
+                <Button 
+                  type="button" variant="outline" onClick={() => setClientDataVerificationOpen(true)}
+                  className="bg-green-50/80 hover:bg-green-100 text-green-950 border-green-200/80 shadow-none transition-colors"
+                >
+                  Выполнить AI проверку данных клиента
+                </Button>
+              )}
+            </div>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
@@ -356,6 +369,20 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
             </DialogContent>
           </Dialog>
 
+          <Dialog open={clientDataVerificationOpen} onOpenChange={setClientDataVerificationOpen}>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>AI проверка данных клиента</DialogTitle>
+              </DialogHeader>
+              {clientDataVerificationOpen && (
+                <ClientDataVerification
+                  insuranceTypeCode={application.insurance_type?.code}
+                  applicationData={data}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+
           <div>
             <h3 className="mb-2 font-medium">История изменений</h3>
             {application.status_history?.length > 0 ? (
@@ -382,12 +409,6 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
         </CardContent>
       </Card>
 
-      {showClientDataVerification && (
-        <ClientDataVerification
-          insuranceTypeCode={application.insurance_type?.code}
-          applicationData={data}
-        />
-      )}
     </div>
   );
 }
