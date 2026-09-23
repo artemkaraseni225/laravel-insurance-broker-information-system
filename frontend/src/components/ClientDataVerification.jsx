@@ -13,32 +13,32 @@ import {
 
 const TYPE_FIELDS = {
   auto: [
-    { key: 'brand', applicationKey: 'car_brand', label: 'Марка' },
-    { key: 'model', applicationKey: 'car_model', label: 'Модель' },
-    { key: 'year', label: 'Год выпуска' },
+    { key: 'car_brand', label: 'Марка' },
+    { key: 'car_model', label: 'Модель' },
     { key: 'license_plate', label: 'Гос. номер ТС' },
     { key: 'vin_or_tech_passport', label: 'VIN-код или номер техпаспорта' },
     { key: 'engine_volume', label: 'Объём двигателя' },
-    { key: 'vehicle_value', applicationKey: 'insurance_sum', label: 'Стоимость автомобиля' },
+    { key: 'insurance_sum', label: 'Стоимость автомобиля' },
     { key: 'driving_experience_years', label: 'Стаж вождения' },
     { key: 'idnp', label: 'IDNP' },
-    { key: 'had_accidents', label: 'Были аварии' },
-    { key: 'accidents_description', label: 'Описание аварий' },
+    { key: 'age', label: 'Возраст' },
   ],
   property: [
-    { key: 'property_address', clientKeys: ['property_address', 'address'], label: 'Адрес объекта' },
+    {
+      key: 'property_address',
+      label: 'Адрес объекта',
+      requiresManualReview: true,
+    },
     { key: 'property_type', label: 'Тип недвижимости' },
     { key: 'area_sqm', label: 'Площадь' },
     { key: 'property_value', label: 'Стоимость имущества' },
     { key: 'idnp', label: 'IDNP' },
     { key: 'has_risk_factors', label: 'Есть факторы риска' },
-    { key: 'has_wooden_floors', label: 'Деревянные перекрытия' },
-    { key: 'has_stove_heating', label: 'Печное отопление' },
   ],
   health: [
+    { key: 'age', label: 'Возраст' },
     { key: 'date_of_birth', label: 'Дата рождения' },
     { key: 'idnp', label: 'IDNP' },
-    { key: 'health_notes', label: 'Сведения о здоровье' },
   ],
 };
 
@@ -68,6 +68,26 @@ function valuesMatch(left, right) {
   }
 
   return String(left).trim().toLocaleLowerCase() === String(right).trim().toLocaleLowerCase();
+}
+
+function comparisonResult(field, applicationValue, clientValue) {
+  if (isMissing(applicationValue)) {
+    return isMissing(clientValue)
+      ? { key: 'not_specified', label: 'Не указано', className: 'text-muted-foreground' }
+      : { key: 'new_info', label: '✦ Новая информация', className: 'text-sky-700' };
+  }
+
+  if (isMissing(clientValue)) {
+    return { key: 'not_specified', label: 'Не указано', className: 'text-muted-foreground' };
+  }
+
+  if (field.requiresManualReview) {
+    return { key: 'manual_review', label: 'Проверить вручную', className: 'text-amber-700' };
+  }
+
+  return valuesMatch(applicationValue, clientValue)
+    ? { key: 'match', label: '✓ Совпадает', className: 'text-emerald-700' }
+    : { key: 'mismatch', label: '⚠ Не совпадает', className: 'text-amber-700' };
 }
 
 function errorMessage(error) {
@@ -163,12 +183,9 @@ function ClientDataVerification({ insuranceTypeCode, applicationData }) {
             </TableHeader>
             <TableBody>
               {fields.map((field) => {
-                const applicationValue = applicationData?.[field.applicationKey ?? field.key];
-                const clientValue = (field.clientKeys ?? [field.key])
-                  .map((key) => extractedData[key])
-                  .find((value) => !isMissing(value));
-                const canCompare = !isMissing(applicationValue) && !isMissing(clientValue);
-                const matches = canCompare && valuesMatch(applicationValue, clientValue);
+                const applicationValue = applicationData?.[field.key];
+                const clientValue = extractedData[field.key];
+                const result = comparisonResult(field, applicationValue, clientValue);
 
                 return (
                   <TableRow key={field.key}>
@@ -176,11 +193,7 @@ function ClientDataVerification({ insuranceTypeCode, applicationData }) {
                     <TableCell className="whitespace-normal">{formatValue(field.key, applicationValue)}</TableCell>
                     <TableCell className="whitespace-normal">{formatValue(field.key, clientValue)}</TableCell>
                     <TableCell className="whitespace-normal">
-                      {canCompare ? (
-                        <span className={matches ? 'text-emerald-700' : 'text-amber-700'}>
-                          {matches ? '✓ Совпадает' : '⚠ Не совпадает'}
-                        </span>
-                      ) : 'Не указано'}
+                      <span className={result.className}>{result.label}</span>
                     </TableCell>
                   </TableRow>
                 );
