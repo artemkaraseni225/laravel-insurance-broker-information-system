@@ -52,7 +52,7 @@ function App() {
         <Route path="applications" element={<BrokerApplications />} />
         <Route
           path="applications/:id"
-          element={<ApplicationDetail backPath="/broker/applications" />}
+          element={<ApplicationDetail backPath="/broker/applications" showRiskAnalysis />}
         />
       </Route>
       <Route

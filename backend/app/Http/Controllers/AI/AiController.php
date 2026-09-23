@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 
 
-class AiTestController extends Controller
+class AiController extends Controller
 {
 
     public function riskAnalysis(Application $application, AiRiskAnalysisService $aiRiskAnalysisService)

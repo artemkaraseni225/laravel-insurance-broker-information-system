@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -48,13 +49,44 @@ const OPTION_LABELS = {
   sports_addon: 'Экстремальные виды спорта',
 };
 
-function ApplicationDetail({ backPath = '/my-applications' }) {
+const RISK_LEVEL_LABELS = {
+  LOW: 'Низкий риск',
+  MEDIUM: 'Средний риск',
+  HIGH: 'Высокий риск',
+};
+
+const RISK_LEVEL_STYLES = {
+  LOW: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  MEDIUM: 'border-amber-200 bg-amber-50 text-amber-800',
+  HIGH: 'border-red-200 bg-red-50 text-red-800',
+};
+
+function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = false }) {
   const { id } = useParams();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documentViewer, setDocumentViewer] = useState(null);
   const [documentLoading, setDocumentLoading] = useState(false);
+  const [riskAnalysis, setRiskAnalysis] = useState(null);
+  const [riskAnalysisLoading, setRiskAnalysisLoading] = useState(false);
+  const [riskAnalysisError, setRiskAnalysisError] = useState(null);
+  const [riskAnalysisOpen, setRiskAnalysisOpen] = useState(false);
+
+  async function runRiskAnalysis() {
+    setRiskAnalysisError(null);
+    setRiskAnalysisLoading(true);
+
+    try {
+      const response = await api.get(`/applications/${id}/risk-analysis`);
+      setRiskAnalysis(response.data.data);
+      setRiskAnalysisOpen(true);
+    } catch {
+      setRiskAnalysisError('Не удалось выполнить AI-анализ. Попробуйте ещё раз.');
+    } finally {
+      setRiskAnalysisLoading(false);
+    }
+  }
 
   async function openDocument(document) {
     setError(null);
@@ -161,15 +193,35 @@ function ApplicationDetail({ backPath = '/my-applications' }) {
       </Link>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Заявка №{application.id}</CardTitle>
-          <CardDescription>
-            {application.insurance_type?.name}
-            {application.tariff?.company ? ` — ${application.tariff.company.name}` : ''}
-            {application.tariff ? ` — ${application.tariff.name}` : ''}
-          </CardDescription>
+        <CardHeader className="gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <CardTitle>Заявка №{application.id}</CardTitle>
+            <CardDescription>
+              {application.insurance_type?.name}
+              {application.tariff?.company ? ` — ${application.tariff.company.name}` : ''}
+              {application.tariff ? ` — ${application.tariff.name}` : ''}
+            </CardDescription>
+          </div>
+          {showRiskAnalysis && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={runRiskAnalysis}
+              disabled={riskAnalysisLoading}
+              aria-busy={riskAnalysisLoading}
+              className="bg-green-50/80 hover:bg-green-100 text-green-950 border-green-200/80 shadow-none transition-colors"
+            >
+              {riskAnalysisLoading && (
+                <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              )}
+              {riskAnalysisLoading ? 'Выполняется анализ...' : 'Выполнить AI-анализ'}
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
+          {riskAnalysisError && (
+            <p className="text-sm text-destructive" role="alert">{riskAnalysisError}</p>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Статус</span>
             <span className="font-medium">
@@ -244,6 +296,61 @@ function ApplicationDetail({ backPath = '/my-applications' }) {
                   title={documentViewer.name}
                   className="h-full min-h-0 w-full rounded-md border"
                 />
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={riskAnalysisOpen} onOpenChange={setRiskAnalysisOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>AI-анализ риска</DialogTitle>
+              </DialogHeader>
+              {riskAnalysis && (
+                <div className="space-y-5 text-sm">
+                  <p className="rounded-md border border-primary/20 bg-primary/5 p-3 text-muted-foreground">
+                    Результат носит рекомендательный характер и не изменяет статус заявки, тариф или стоимость.
+                  </p>
+
+                  <section>
+                    <h3 className="mb-2 font-medium">Уровень риска</h3>
+                    <div
+                      className={`inline-flex rounded-full border px-3 py-1 font-medium ${
+                        RISK_LEVEL_STYLES[riskAnalysis.risk_level] ?? 'border-border bg-muted text-foreground'
+                      }`}
+                    >
+                      {RISK_LEVEL_LABELS[riskAnalysis.risk_level] ?? riskAnalysis.risk_level}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="mb-2 font-medium">Факторы риска</h3>
+                    {riskAnalysis.factors?.length > 0 ? (
+                      <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
+                        {riskAnalysis.factors.map((factor, index) => (
+                          <li key={`${factor}-${index}`}>{factor}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted-foreground">Факторы риска не указаны.</p>
+                    )}
+                  </section>
+
+                  <section>
+                    <h3 className="mb-2 font-medium">Рекомендация для брокера</h3>
+                    <p className="rounded-md border bg-muted/50 p-3 text-muted-foreground">
+                      {riskAnalysis.recommendation}
+                    </p>
+                  </section>
+
+                  <section className="flex items-center justify-between rounded-md border p-3">
+                    <h3 className="font-medium">Качество данных заявки</h3>
+                    <span className="text-base font-semibold">
+                      {Number.isFinite(Number(riskAnalysis.data_quality_score))
+                        ? `${Math.round(Number(riskAnalysis.data_quality_score) * 100)}%`
+                        : '—'}
+                    </span>
+                  </section>
+                </div>
               )}
             </DialogContent>
           </Dialog>
