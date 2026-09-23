@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import ClientDataVerification from '../components/ClientDataVerification';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {
@@ -61,7 +62,7 @@ const RISK_LEVEL_STYLES = {
   HIGH: 'border-red-200 bg-red-50 text-red-800',
 };
 
-function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = false }) {
+function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = false, showClientDataVerification = false }) {
   const { id } = useParams();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -380,6 +381,13 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
           </div>
         </CardContent>
       </Card>
+
+      {showClientDataVerification && (
+        <ClientDataVerification
+          insuranceTypeCode={application.insurance_type?.code}
+          applicationData={data}
+        />
+      )}
     </div>
   );
 }
