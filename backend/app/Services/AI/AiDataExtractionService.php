@@ -1,0 +1,173 @@
+<?php
+
+namespace App\Services\AI;
+
+use RuntimeException;
+
+class AiDataExtractionService
+{
+    /**
+     * Поля, которые AI может извлекать из свободного текста клиента
+     */
+    private const SCHEMAS = [
+        'auto' => [
+            'brand' => 'Марка автомобиля (строка)',
+            'model' => 'Модель автомобиля (строка)',
+            'year' => 'Год выпуска автомобиля (целое число)',
+            'engine_volume' => 'Объём двигателя в литрах (число, например 1.6)',
+            'driving_experience_years' => 'Стаж вождения в полных годах (целое число)',
+            'had_accidents' => 'Были ли у клиента аварии (true или false)',
+            'accidents_description' => 'Краткое описание аварий, если они были (строка)',
+        ],
+
+        'property' => [
+            'address' => 'Адрес объекта (строка)',
+            'property_type' => 'Тип объекта: apartment или house',
+            'area_sqm' => 'Площадь объекта в квадратных метрах (число)',
+            'has_wooden_floors' => 'Есть ли деревянные перекрытия (true или false)',
+            'has_stove_heating' => 'Есть ли печное отопление (true или false)',
+        ],
+
+        'health' => [
+            'date_of_birth' => 'Дата рождения в формате YYYY-MM-DD',
+            'idnp' => 'IDNP, 13 цифр (строка)',
+            'health_notes' => 'Релевантные сведения о здоровье, явно указанные клиентом (строка)',
+        ],
+    ];
+
+    public function __construct(
+        protected AiAssistantService $aiAssistant
+    ) {
+    }
+
+    /**
+     * Извлекает структурированные данные
+     * из свободного текста клиента.
+     */
+    public function extractData(
+        string $insuranceTypeCode,
+        string $clientMessage
+    ): array {
+        $schema = self::SCHEMAS[$insuranceTypeCode] ?? null;
+
+        if (!$schema) {
+            throw new RuntimeException(
+                "Unknown insurance type: {$insuranceTypeCode}"
+            );
+        }
+
+        $prompt = $this->buildPrompt(
+            $insuranceTypeCode,
+            $schema,
+            $clientMessage
+        );
+
+        $raw = $this->aiAssistant->ask($prompt);
+
+        return $this->parseResponse($raw, $schema);
+    }
+
+    /**
+     * Формирует prompt для AI.
+     */
+    protected function buildPrompt(
+        string $insuranceTypeCode,
+        array $schema,
+        string $clientMessage
+    ): string {
+        $fieldsList = collect($schema)
+            ->map(
+                fn ($description, $key) =>
+                    "- \"{$key}\": {$description}"
+            )
+            ->implode("\n");
+
+        return <<<PROMPT
+Ты — AI-модуль системы страхового брокера.
+
+Твоя задача — извлечь структурированные данные
+из свободного текста клиента для автоматического
+заполнения формы страховой заявки.
+
+Тип страхования: {$insuranceTypeCode}
+
+Извлекай ТОЛЬКО информацию, которая явно присутствует
+в сообщении клиента.
+
+НЕ ПРИДУМЫВАЙ значения.
+
+Если поле отсутствует, неизвестно или его невозможно
+определить однозначно — обязательно используй null.
+
+Верни ТОЛЬКО валидный JSON без Markdown,
+пояснений и дополнительного текста.
+
+Разрешённые поля:
+
+{$fieldsList}
+
+Дополнительные правила:
+
+- Не добавляй поля, которых нет в списке.
+- Не изменяй названия полей.
+- Не делай предположений на основе контекста.
+- Если клиент указал приблизительное значение,
+  не превращай его в точное без достаточных оснований.
+- Числовые значения возвращай как числа, а не строки.
+- Boolean-значения возвращай как true или false.
+- Если информация противоречива, используй null
+  вместо самостоятельного выбора одного значения.
+
+Сообщение клиента:
+
+{$clientMessage}
+PROMPT;
+    }
+
+    /**
+     * Проверяет и нормализует ответ AI.
+     */
+    protected function parseResponse(
+        string $raw,
+        array $schema
+    ): array {
+        $result = json_decode($raw, true);
+
+        if (
+            json_last_error() !== JSON_ERROR_NONE ||
+            !is_array($result)
+        ) {
+            throw new RuntimeException(
+                'AI returned invalid JSON.'
+            );
+        }
+
+        /*
+         * Оставляем только поля,
+         * которые разрешены текущей схемой.
+         */
+        $result = array_intersect_key(
+            $result,
+            $schema
+        );
+
+        /*
+         * Гарантируем наличие всех ожидаемых полей.
+         * Если AI не вернул поле — ставим null.
+         */
+        foreach ($schema as $key => $description) {
+            if (!array_key_exists($key, $result)) {
+                $result[$key] = null;
+            }
+        }
+
+        return $result;
+    }
+
+    public static function schemaFor(
+        string $insuranceTypeCode
+    ): ?array {
+        return self::SCHEMAS[$insuranceTypeCode] ?? null;
+    }
+}
+

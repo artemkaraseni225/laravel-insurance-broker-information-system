@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/calculator/quote', [CalculatorController::class, 'quote']);
@@ -50,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
         Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
         Route::middleware(['throttle:10,1'])->get('/applications/{application}/risk-analysis',[AIController::class, 'riskAnalysis']);
-
+        Route::post('/applications/parse-text',[AIController::class, 'parseText']);
     });
 
     Route::middleware('role:admin')->prefix('admin')->group(function () {
