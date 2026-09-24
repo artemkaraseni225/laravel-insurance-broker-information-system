@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import AuthNavbar from '@/components/AuthNavbar';
 import {
   Card,
   CardHeader,
@@ -398,26 +399,14 @@ function Calculator() {
   }
 
   return (
-    <div className="min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-background">
       {!currentUser && authChecked && (
-        <header className="border-b border-border/80 bg-card/80">
-          <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-            <Link to="/" className="text-sm font-semibold tracking-tight">
-              Insurance Broker
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/login" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Войти
-              </Link>
-              <Link to="/register" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Регистрация
-              </Link>
-            </div>
-          </nav>
-        </header>
+        <AuthNavbar activePage="calculator" />
       )}
 
-      <main className="relative bg-[radial-gradient(circle_at_15%_0%,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),radial-gradient(circle_at_90%_12%,color-mix(in_oklch,var(--accent)_75%,transparent),transparent_28%)] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <main className={`relative bg-[radial-gradient(circle_at_15%_0%,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),radial-gradient(circle_at_90%_12%,color-mix(in_oklch,var(--accent)_75%,transparent),transparent_28%)] px-4 sm:px-6 lg:px-8 ${
+        !currentUser && authChecked ? 'pb-8 pt-24 sm:pb-12 sm:pt-28 lg:pb-12' : 'py-8 sm:py-12 lg:py-12'
+      }`}>
         <div className="mx-auto max-w-7xl space-y-16">
           <section className="relative overflow-hidden rounded-3xl border border-primary/15 bg-card/80 px-6 py-10 shadow-sm sm:px-10 sm:py-14 lg:px-14 lg:py-16">
             <div className="pointer-events-none absolute -right-24 -top-28 size-72 rounded-full bg-primary/10 blur-3xl" />

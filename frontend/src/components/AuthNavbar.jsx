@@ -20,7 +20,7 @@ function AuthNavbar({ activePage }) {
           <Link to="/about" className={linkClassName('about')}>
             О нас
           </Link>
-          <Link to="/calculator" className="rounded-lg px-2 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-teal-50 hover:text-teal-700 sm:px-2.5">
+          <Link to="/calculator" className={linkClassName('calculator')}>
             Калькулятор
           </Link>
           <Link to="/login" className={linkClassName('login')}>
