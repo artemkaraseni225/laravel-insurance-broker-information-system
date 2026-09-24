@@ -5,6 +5,7 @@ import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AboutPage from './pages/AboutPage';
 import Calculator from './pages/Calculator';
 import MyApplications from './pages/MyApplications';
 import MyPolicies from './pages/MyPolicies';
@@ -25,6 +26,7 @@ function App() {
       <Route path="/calculator" element={<Calculator />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route
         path="/"
         element={

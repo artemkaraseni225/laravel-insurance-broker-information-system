@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { KeyRound } from 'lucide-react';
+import { toast } from 'sonner';
 import { register } from '../services/authService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import AuthNavbar from '@/components/AuthNavbar';
 
 const initialForm = {
   name: '',
@@ -25,6 +27,10 @@ function Register() {
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function showUnavailableFeature() {
+    toast.info('Функциональность находится в разработке');
   }
 
   async function handleSubmit(e) {
@@ -55,12 +61,14 @@ function Register() {
   const inputClassName = 'rounded-lg focus-visible:border-teal-500 focus-visible:ring-teal-500';
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-8 sm:px-6">
-      <Card className="w-full max-w-[960px] !grid !gap-0 !overflow-hidden rounded-2xl !py-0 shadow-xl md:grid-cols-2">
-        <div className="relative hidden overflow-hidden bg-gradient-to-br from-teal-400 to-teal-700 md:block" aria-hidden="true">
-          <div className="absolute -left-24 -top-16 h-72 w-[140%] rotate-[-24deg] bg-teal-200/30" />
-          <div className="absolute -right-32 top-[31%] h-56 w-[135%] rotate-[-24deg] bg-cyan-100/20" />
-          <div className="absolute -bottom-24 -left-28 h-80 w-[130%] rotate-[-24deg] bg-teal-950/20" />
+    <div className="relative min-h-screen bg-muted/40">
+      <AuthNavbar activePage="register" />
+      <main className="flex min-h-screen items-center justify-center px-4 py-24 sm:px-6">
+        <Card className="w-full max-w-[960px] !grid !gap-0 !overflow-hidden rounded-2xl !py-0 shadow-xl md:grid-cols-2">
+        <div className="relative hidden overflow-hidden bg-[#07110f] [background-image:radial-gradient(ellipse_at_105%_52%,rgba(20,184,166,0.62),rgba(8,72,68,0.34)_30%,transparent_58%),linear-gradient(125deg,#111816_0%,#07110f_58%,#063a37_100%)] md:block" aria-hidden="true">
+          <div className="absolute -right-28 -top-1/4 h-[150%] w-24 rotate-[27deg] bg-gradient-to-b from-transparent via-teal-200/35 to-transparent blur-sm" />
+          <div className="absolute -right-16 -top-1/4 h-[150%] w-10 rotate-[27deg] bg-gradient-to-b from-transparent via-cyan-100/55 to-transparent blur-[2px]" />
+          <div className="absolute -bottom-1/3 -right-1/2 size-[120%] rounded-full border border-teal-200/20 shadow-[0_0_100px_28px_rgba(20,184,166,0.2)]" />
         </div>
 
         <section className="flex flex-col justify-center p-8 sm:p-10">
@@ -205,6 +213,7 @@ function Register() {
             <Button
               type="button"
               variant="outline"
+              onClick={showUnavailableFeature}
               className="h-11 w-full rounded-lg border-gray-300 bg-white text-foreground hover:bg-gray-50"
             >
               <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -217,8 +226,9 @@ function Register() {
             </Button>
           </div>
         </section>
-      </Card>
-    </main>
+        </Card>
+      </main>
+    </div>
   );
 }
 
