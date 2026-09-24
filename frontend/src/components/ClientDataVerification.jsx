@@ -21,6 +21,11 @@ const TYPE_FIELDS = {
     { key: 'insurance_sum', label: 'Стоимость автомобиля' },
     { key: 'driving_experience_years', label: 'Стаж вождения' },
     { key: 'idnp', label: 'IDNP' },
+    {
+      key: 'had_accidents',
+      label: 'Были аварии',
+      applicationValue: (applicationData) => !(applicationData?.options ?? []).includes('no_accident_history'),
+    },
     { key: 'age', label: 'Возраст' },
   ],
   property: [
@@ -48,6 +53,7 @@ function isMissing(value) {
 
 function formatValue(key, value) {
   if (isMissing(value)) return 'Не указано';
+  if (key === 'had_accidents') return value ? 'Были' : 'Не было';
   if (typeof value === 'boolean') return value ? 'Да' : 'Нет';
 
   if (key === 'property_type') {
@@ -183,7 +189,9 @@ function ClientDataVerification({ insuranceTypeCode, applicationData }) {
             </TableHeader>
             <TableBody>
               {fields.map((field) => {
-                const applicationValue = applicationData?.[field.key];
+                const applicationValue = field.applicationValue
+                  ? field.applicationValue(applicationData)
+                  : applicationData?.[field.key];
                 const clientValue = extractedData[field.key];
                 const result = comparisonResult(field, applicationValue, clientValue);
 
