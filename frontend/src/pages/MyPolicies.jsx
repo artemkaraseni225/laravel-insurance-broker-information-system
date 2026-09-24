@@ -58,8 +58,8 @@ function MyPolicies() {
                 {policies.map((policy) => (
                   <tr key={policy.id} className="border-b border-border/60 transition-colors hover:bg-teal-50/50 last:border-0">
                     <td className="px-6 py-4">
-                      <Link to={`/policies/${policy.id}`} className="font-semibold text-teal-700 transition-colors hover:text-teal-800 hover:underline">
-                        {policy.id}
+                      <Link to={`/policies/${policy.id}`} className="inline-flex h-8 items-center rounded-lg bg-teal-50 px-2.5 text-xs font-semibold tabular-nums text-teal-700 ring-1 ring-inset ring-teal-200 transition-colors hover:bg-teal-100 hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+                        #{policy.id}
                       </Link>
                     </td>
                     <td className="px-6 py-4 font-medium">{policy.policy_number}</td>
