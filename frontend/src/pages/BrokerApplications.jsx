@@ -38,12 +38,15 @@ const FILTERS = [
   { value: 'cancelled', label: 'Отмененные' },
 ];
 
+const PAGE_SIZE = 6;
+
 function BrokerApplications() {
   const [applications, setApplications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     api
@@ -79,10 +82,16 @@ function BrokerApplications() {
     filter === 'all'
       ? applications.filter(({ status }) => status !== 'cancelled')
       : applications.filter(({ status }) => status === filter);
+  const totalPages = Math.max(1, Math.ceil(visibleApplications.length / PAGE_SIZE));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedApplications = visibleApplications.slice(
+    (activePage - 1) * PAGE_SIZE,
+    activePage * PAGE_SIZE,
+  );
 
   return (
-    <main className="space-y-6">
-      <Card className="!gap-0 overflow-hidden rounded-2xl !py-0 shadow-sm">
+    <main className="flex min-h-[calc(100vh-8rem)] flex-col lg:h-[calc(100vh-8rem)]">
+      <Card className="!flex min-h-0 flex-1 !gap-0 overflow-hidden rounded-2xl !py-0 shadow-sm">
         <CardHeader className="!flex flex-col gap-5 border-b border-border/70 bg-gradient-to-r from-teal-50/80 to-background px-6 py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
@@ -111,7 +120,7 @@ function BrokerApplications() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="!px-0">
+        <CardContent className="!flex min-h-0 flex-1 flex-col !px-0">
           {loading && <p className="px-6 py-10 text-center text-muted-foreground">Загрузка заявок...</p>}
           {error && <p className="m-6 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
 
@@ -127,50 +136,51 @@ function BrokerApplications() {
           )}
 
           {!loading && visibleApplications.length > 0 && (
-            <Table className="min-w-[900px] text-sm">
+            <div className="hidden min-h-0 flex-1 overflow-y-auto xl:block">
+            <Table className="w-full table-fixed text-xs">
               <TableHeader>
                 <TableRow className="border-border/70 bg-muted/50 hover:bg-muted/50">
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold tracking-wider uppercase">Заявка</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold tracking-wider uppercase">Клиент</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold tracking-wider uppercase">Страхование</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold tracking-wider uppercase">Тариф</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold tracking-wider uppercase">Стоимость</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold tracking-wider uppercase">Статус</TableHead>
-                  <TableHead className="px-6 py-3.5 text-right text-xs font-semibold tracking-wider uppercase">Решение</TableHead>
+                  <TableHead className="w-[6%] px-2 py-2.5 text-[11px] font-semibold tracking-wider uppercase">Заявка</TableHead>
+                  <TableHead className="w-[20%] px-2 py-2.5 text-[11px] font-semibold tracking-wider uppercase">Клиент</TableHead>
+                  <TableHead className="w-[14%] px-2 py-2.5 text-[11px] font-semibold tracking-wider uppercase">Страхование</TableHead>
+                  <TableHead className="w-[18%] px-2 py-2.5 text-[11px] font-semibold tracking-wider uppercase">Тариф</TableHead>
+                  <TableHead className="w-[12%] px-2 py-2.5 text-[11px] font-semibold tracking-wider uppercase">Стоимость</TableHead>
+                  <TableHead className="w-[14%] px-2 py-2.5 text-[11px] font-semibold tracking-wider uppercase">Статус</TableHead>
+                  <TableHead className="w-[16%] px-2 py-2.5 text-right text-[11px] font-semibold tracking-wider uppercase">Решение</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visibleApplications.map((application) => {
+                {paginatedApplications.map((application) => {
                   const canDecide = ['new', 'in_review'].includes(application.status);
                   const isUpdating = updatingId === application.id;
 
                   return (
                     <TableRow key={application.id} className="border-border/60 transition-colors hover:bg-teal-50/50">
-                      <TableCell className="px-6 py-4">
-                        <Link to={`/broker/applications/${application.id}`} className="inline-flex h-8 items-center rounded-lg bg-teal-50 px-2.5 text-xs font-semibold tabular-nums text-teal-700 ring-1 ring-inset ring-teal-200 transition-colors hover:bg-teal-100 hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+                      <TableCell className="px-2 py-2.5">
+                        <Link to={`/broker/applications/${application.id}`} className="font-semibold tabular-nums text-teal-700 transition-colors hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
                           #{application.id}
                         </Link>
                       </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <div className="font-medium">{application.customer?.name ?? 'Без имени'}</div>
-                        <div className="mt-0.5 text-xs text-muted-foreground">
+                      <TableCell className="px-2 py-2.5">
+                        <div className="truncate font-medium" title={application.customer?.name ?? 'Без имени'}>{application.customer?.name ?? 'Без имени'}</div>
+                        <div className="mt-0.5 truncate text-[11px] text-muted-foreground" title={application.customer?.email ?? 'Email не указан'}>
                           {application.customer?.email ?? 'Email не указан'}
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 font-medium">{application.insurance_type?.name ?? '—'}</TableCell>
-                      <TableCell className="px-6 py-4">
-                        <div>{application.tariff?.name ?? '—'}</div>
-                        <div className="mt-0.5 text-xs text-muted-foreground">
+                      <TableCell className="truncate px-2 py-2.5 font-medium" title={application.insurance_type?.name ?? '—'}>{application.insurance_type?.name ?? '—'}</TableCell>
+                      <TableCell className="px-2 py-2.5">
+                        <div className="truncate" title={application.tariff?.name ?? '—'}>{application.tariff?.name ?? '—'}</div>
+                        <div className="mt-0.5 truncate text-[11px] text-muted-foreground" title={application.tariff?.company?.name ?? ''}>
                           {application.tariff?.company?.name ?? ''}
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 font-semibold tabular-nums">{application.calculated_price} MDL</TableCell>
-                      <TableCell className="px-6 py-4">
+                      <TableCell className="px-2 py-2.5 font-semibold tabular-nums">{application.calculated_price} MDL</TableCell>
+                      <TableCell className="px-2 py-2.5">
                         <Badge className={STATUS_STYLES[application.status]}>
                           {STATUS_LABELS[application.status] ?? application.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="px-6 py-4">
+                      <TableCell className="px-2 py-2.5">
                         {canDecide ? (
                           <div className="flex justify-end gap-2">
                             <Button
@@ -178,7 +188,7 @@ function BrokerApplications() {
                               size="sm"
                               onClick={() => updateStatus(application.id, 'approved')}
                               disabled={isUpdating}
-                              className="h-8 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
+                              className="h-7 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-2 text-xs text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
                             >
                               Одобрить
                             </Button>
@@ -188,7 +198,7 @@ function BrokerApplications() {
                               variant="destructive"
                               onClick={() => updateStatus(application.id, 'rejected')}
                               disabled={isUpdating}
-                              className="h-8 rounded-lg"
+                              className="h-7 rounded-lg px-2 text-xs"
                             >
                               Отклонить
                             </Button>
@@ -202,6 +212,87 @@ function BrokerApplications() {
                 })}
               </TableBody>
             </Table>
+            </div>
+          )}
+
+          {!loading && visibleApplications.length > 0 && (
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 xl:hidden">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {paginatedApplications.map((application) => {
+                  const canDecide = ['new', 'in_review'].includes(application.status);
+                  const isUpdating = updatingId === application.id;
+
+                  return (
+                    <div key={application.id} className="rounded-xl border border-border/70 bg-card p-4 shadow-xs">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <Link to={`/broker/applications/${application.id}`} className="font-semibold tabular-nums text-teal-700 transition-colors hover:text-teal-800 hover:underline">
+                            #{application.id}
+                          </Link>
+                          <p className="mt-1 truncate text-sm font-medium" title={application.customer?.name ?? 'Без имени'}>{application.customer?.name ?? 'Без имени'}</p>
+                          <p className="mt-0.5 break-all text-xs text-muted-foreground">{application.customer?.email ?? 'Email не указан'}</p>
+                        </div>
+                        <Badge className={STATUS_STYLES[application.status]}>
+                          {STATUS_LABELS[application.status] ?? application.status}
+                        </Badge>
+                      </div>
+                      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded-lg bg-muted/50 p-2">
+                          <dt className="text-muted-foreground">Страхование</dt>
+                          <dd className="mt-1 font-medium">{application.insurance_type?.name ?? '—'}</dd>
+                        </div>
+                        <div className="rounded-lg bg-muted/50 p-2">
+                          <dt className="text-muted-foreground">Стоимость</dt>
+                          <dd className="mt-1 font-semibold tabular-nums">{application.calculated_price} MDL</dd>
+                        </div>
+                      </dl>
+                      <p className="mt-3 truncate text-xs text-muted-foreground" title={application.tariff?.company ? `${application.tariff.company.name} — ${application.tariff?.name ?? ''}` : application.tariff?.name ?? '—'}>
+                        {application.tariff?.company ? `${application.tariff.company.name} — ` : ''}{application.tariff?.name ?? '—'}
+                      </p>
+                      {canDecide ? (
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => updateStatus(application.id, 'approved')}
+                            disabled={isUpdating}
+                            className="h-8 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-xs text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
+                          >
+                            Одобрить
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => updateStatus(application.id, 'rejected')}
+                            disabled={isUpdating}
+                            className="h-8 rounded-lg text-xs"
+                          >
+                            Отклонить
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="mt-3 block text-center text-xs text-muted-foreground">Решение принято</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {!loading && visibleApplications.length > 0 && (
+            <div className="flex items-center justify-between gap-3 border-t border-border/70 px-4 py-3">
+              <span className="text-xs text-muted-foreground">Страница {activePage} из {totalPages}</span>
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setCurrentPage(() => Math.max(1, activePage - 1))} disabled={activePage === 1} className="h-8 rounded-lg">
+                  Назад
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setCurrentPage(() => Math.min(totalPages, activePage + 1))} disabled={activePage === totalPages} className="h-8 rounded-lg">
+                  Вперёд
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
