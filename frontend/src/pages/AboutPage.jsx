@@ -62,7 +62,7 @@ function AboutPage() {
         <section className="flex min-h-[60vh] items-center bg-gradient-to-br from-teal-400 to-teal-700 px-4 pb-16 pt-28 text-white sm:px-6">
           <div className="mx-auto w-full max-w-3xl text-center">
             <p className="mb-4 text-sm font-semibold tracking-[0.2em] uppercase text-teal-50/90">
-              Insurance Platform
+              InsureFlow
             </p>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">О платформе</h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-white/90">

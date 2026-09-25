@@ -413,7 +413,7 @@ function Calculator() {
             <div className="relative grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="max-w-xl">
                 <p className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-primary uppercase">
-                  <Sparkles className="size-4" /> Insurance Broker Platform
+                  <Sparkles className="size-4" /> InsureFlow
                 </p>
                 <h1 className="max-w-lg text-4xl font-semibold tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl">
                   Страхование стало проще

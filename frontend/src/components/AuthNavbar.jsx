@@ -13,7 +13,7 @@ function AuthNavbar({ activePage }) {
       <nav className="mx-auto flex h-16 max-w-[1440px] items-center justify-between rounded-2xl border border-border/80 bg-card/95 px-4 shadow-sm backdrop-blur sm:px-5">
         <Link to="/calculator" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-teal-800">
           <ShieldCheck className="size-5 text-teal-600" />
-          <span className="hidden text-lg md:inline">Insurance Platform</span>
+          <span className="hidden text-lg md:inline">InsureFlow</span>
         </Link>
 
         <div className="flex items-center gap-0.5 sm:gap-1">

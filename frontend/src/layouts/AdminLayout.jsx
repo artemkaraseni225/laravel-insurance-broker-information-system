@@ -1,7 +1,7 @@
 import AppShell from '../components/AppShell';
 
 function AdminLayout() {
-  return <AppShell brand="Панель администратора" home="/admin/users" contentClassName="w-full" links={[
+  return <AppShell brand="InsureFlow" home="/admin/users" contentClassName="w-full" links={[
     { to: '/admin/users', label: 'Пользователи', icon: 'users' },
     { to: '/admin/statistics', label: 'Статистика', icon: 'statistics' },
     { to: '/admin/create-user', label: 'Создать пользователя', icon: 'create' },
