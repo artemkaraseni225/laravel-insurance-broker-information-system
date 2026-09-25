@@ -6,7 +6,9 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  Mail,
   PanelsTopLeft,
+  Phone,
   Settings2,
   ShieldCheck,
   UserPlus,
@@ -56,6 +58,8 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
   const roleValue = typeof currentUser?.role === 'string' ? currentUser.role : currentUser?.role?.name;
   const roleLabel = ROLE_LABELS[String(roleValue ?? '').toLowerCase()] ?? 'Customer';
   const userName = currentUser?.name ?? 'Пользователь';
+  const userEmail = currentUser?.email ?? 'Email не указан';
+  const userPhone = currentUser?.customer?.phone ?? currentUser?.broker?.phone ?? currentUser?.phone ?? 'Телефон не указан';
 
   async function handleLogout() {
     try {
@@ -105,6 +109,16 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
           <div className="mt-4 border-t border-sidebar-border/70 pt-3">
             <p className="truncate text-sm font-semibold text-sidebar-foreground">{userName}</p>
             <p className="mt-0.5 text-xs text-muted-foreground">{roleLabel}</p>
+            <div className="mt-2 space-y-1.5 text-xs text-muted-foreground">
+              <p className="flex min-w-0 items-center gap-1.5">
+                <Mail className="size-3 shrink-0" aria-hidden="true" />
+                <span className="truncate" title={userEmail}>{userEmail}</span>
+              </p>
+              <p className="flex min-w-0 items-center gap-1.5">
+                <Phone className="size-3 shrink-0" aria-hidden="true" />
+                <span className="truncate" title={userPhone}>{userPhone}</span>
+              </p>
+            </div>
           </div>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-6">{links.map((link) => renderNavLink(link))}</nav>

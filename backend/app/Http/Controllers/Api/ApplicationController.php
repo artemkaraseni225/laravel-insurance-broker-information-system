@@ -107,12 +107,9 @@ class ApplicationController extends Controller
                 'tariff_id' => ['Выбранный тариф не относится к указанному типу страхования.'],
             ]);
         }
-
-        // Цену считаем на бэке заново через тот же CalculatorService,
+        
         $price = $this->calculatorService->calculate($tariff, $data['insurance_type'], $data);
 
-        // insurance_type/tariff_id уже есть в отдельных колонках —
-        // в JSON кладём только специфичные для расчёта параметры
         $insuranceData = collect($data)->except(['insurance_type', 'tariff_id'])->toArray();
 
         $application = Application::create([
