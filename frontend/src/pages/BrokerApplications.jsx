@@ -90,9 +90,9 @@ function BrokerApplications() {
   );
 
   return (
-    <main className="flex min-h-[calc(100vh-8rem)] flex-col lg:h-[calc(100vh-8rem)]">
+    <main className="flex min-h-0 flex-1 flex-col">
       <Card className="!flex min-h-0 flex-1 !gap-0 overflow-hidden rounded-2xl !py-0 shadow-sm">
-        <CardHeader className="!flex flex-col gap-5 border-b border-border/70 bg-gradient-to-r from-teal-50/80 to-background px-6 py-6">
+        <CardHeader className="!flex shrink-0 flex-col gap-5 border-b border-border/70 bg-gradient-to-r from-teal-50/80 to-background px-6 py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 shadow-sm">
@@ -282,7 +282,7 @@ function BrokerApplications() {
           )}
 
           {!loading && visibleApplications.length > 0 && (
-            <div className="flex items-center justify-between gap-3 border-t border-border/70 px-4 py-3">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border/70 px-4 py-3">
               <span className="text-xs text-muted-foreground">Страница {activePage} из {totalPages}</span>
               <div className="flex gap-2">
                 <Button type="button" size="sm" variant="outline" onClick={() => setCurrentPage(() => Math.max(1, activePage - 1))} disabled={activePage === 1} className="h-8 rounded-lg">

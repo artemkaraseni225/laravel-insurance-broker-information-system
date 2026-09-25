@@ -32,7 +32,7 @@ const ROLE_LABELS = {
   admin: 'Admin',
 };
 
-function AppShell({ brand, home, links }) {
+function AppShell({ brand, home, links, fillWorkspace = false }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -120,7 +120,7 @@ function AppShell({ brand, home, links }) {
         </div>
       </aside>
 
-      <div className="md:pl-64">
+      <div className={fillWorkspace ? 'flex min-h-screen flex-col md:h-screen md:pl-64' : 'md:pl-64'}>
         <header className="sticky top-0 z-10 border-b border-border/80 bg-background/95 backdrop-blur md:hidden">
           <div className="flex h-16 items-center justify-between px-4">
             <Link to={home} className="flex min-w-0 items-center gap-2 text-sm font-semibold">
@@ -146,8 +146,8 @@ function AppShell({ brand, home, links }) {
             {links.map((link) => renderNavLink(link, true))}
           </nav>
         </header>
-        <main className="min-h-[calc(100vh-4rem)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto w-full max-w-7xl">
+        <main className={fillWorkspace ? 'flex min-h-[calc(100vh-4rem)] min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 md:min-h-0 lg:px-8 lg:py-8' : 'min-h-[calc(100vh-4rem)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8'}>
+          <div className={fillWorkspace ? 'flex min-h-0 w-full flex-1 flex-col' : 'mx-auto w-full max-w-7xl'}>
             <Outlet />
           </div>
         </main>
