@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import api from '../../services/api';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const emptyForm = { name: '', code: '', description: '', status: 'active' };
 
@@ -26,21 +29,28 @@ function InsuranceTypesAdmin() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(loadTypes, []);
+  useEffect(() => {
+    let active = true;
+
+    api
+      .get('/admin/insurance-types')
+      .then(({ data }) => {
+        if (active) setTypes(data.insurance_types);
+      })
+      .catch(() => {
+        if (active) setError('Не удалось загрузить типы страхования');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  function startEdit(type) {
-    setEditingId(type.id);
-    setForm({
-      name: type.name,
-      code: type.code,
-      description: type.description ?? '',
-      status: type.status,
-    });
-    setWarning(null);
   }
 
   function cancelEdit() {
@@ -85,9 +95,9 @@ function InsuranceTypesAdmin() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-6">
-      <Card>
-        <CardHeader>
+    <div className="w-full space-y-6">
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-border/70 px-6 py-5">
           <CardTitle>{editingId ? 'Редактировать тип страхования' : 'Новый тип страхования'}</CardTitle>
           <CardDescription>
             Калькулятор и форма заявки на фронте захардкоржены только под auto/property/health —
@@ -95,7 +105,7 @@ function InsuranceTypesAdmin() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-3">
+          <CardContent className="grid gap-4 px-6 sm:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="name">Название</Label>
               <Input id="name" name="name" value={form.name} onChange={handleChange} required />
@@ -111,7 +121,7 @@ function InsuranceTypesAdmin() {
             <div className="space-y-2">
               <Label>Статус</Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                <SelectTrigger className="w-50">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -121,10 +131,10 @@ function InsuranceTypesAdmin() {
               </Select>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            {warning && <p className="text-sm text-amber-600">{warning}</p>}
+            {error && <p className="text-sm text-destructive sm:col-span-2 xl:col-span-3">{error}</p>}
+            {warning && <p className="text-sm text-amber-600 sm:col-span-2 xl:col-span-3">{warning}</p>}
           </CardContent>
-          <CardContent className="flex gap-2 pt-0">
+          <CardContent className="flex flex-wrap gap-2 px-6 pt-0">
             <Button type="submit" disabled={submitting}>
               {editingId ? 'Сохранить' : 'Создать'}
             </Button>
@@ -137,46 +147,41 @@ function InsuranceTypesAdmin() {
         </form>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="border-b border-border/70 px-5 py-4">
           <CardTitle>Типы страхования</CardTitle>
         </CardHeader>
-        <CardContent>
-          {loading && <p className="text-muted-foreground">Загрузка...</p>}
+        <CardContent className="min-w-0 !px-0">
+          {loading && <p className="px-5 pb-5 text-muted-foreground">Загрузка...</p>}
           {!loading && types.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-            <table className="crm-table w-full">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="py-2">Код</th>
-                  <th className="py-2">Название</th>
-                  <th className="py-2">Статус</th>
-                  <th className="py-2">Тарифов</th>
-                  <th className="py-2">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="min-w-[40rem] text-sm">
+              <TableHeader>
+                <TableRow className="border-border/70 bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="min-w-28 px-5">Код</TableHead>
+                  <TableHead className="min-w-52 px-4">Название</TableHead>
+                  <TableHead className="px-4">Статус</TableHead>
+                  <TableHead className="px-4 text-center">Тарифов</TableHead>
+                  <TableHead className="px-5 text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {types.map((type) => (
-                  <tr key={type.id} className="border-b last:border-0">
-                    <td className="py-2">{type.code}</td>
-                    <td className="py-2">{type.name}</td>
-                    <td className="py-2">{type.status === 'active' ? 'Активен' : 'Неактивен'}</td>
-                    <td className="py-2">{type.tariffs_count}</td>
-                    <td className="py-2 flex gap-2">
-                      <button
-                        type="button"
-                        className="text-destructive underline"
-                        onClick={() => handleDelete(type.id)}
-                      >
-                        Удалить
-                      </button>
-                    </td>
-                  </tr>
+                  <TableRow key={type.id}>
+                    <TableCell className="px-5 py-3 font-medium"><span className="block whitespace-normal break-words">{type.code}</span></TableCell>
+                    <TableCell className="px-4 py-3 font-medium"><span className="block whitespace-normal break-words">{type.name}</span></TableCell>
+                    <TableCell className="px-4 py-3"><Badge variant={type.status === 'active' ? 'secondary' : 'outline'}>{type.status === 'active' ? 'Активен' : 'Неактивен'}</Badge></TableCell>
+                    <TableCell className="px-4 py-3 text-center font-semibold tabular-nums">{type.tariffs_count}</TableCell>
+                    <TableCell className="px-5 py-3">
+                      <div className="flex min-w-24 justify-end">
+                        <Button type="button" size="sm" variant="destructive" onClick={() => handleDelete(type.id)} aria-label={`Удалить тип ${type.name}`}><Trash2 />Удалить</Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-            </div>
+              </TableBody>
+            </Table>
           )}
+          {!loading && !error && types.length === 0 && <p className="empty-state mx-5 mb-5">Типов страхования пока нет.</p>}
         </CardContent>
       </Card>
     </div>

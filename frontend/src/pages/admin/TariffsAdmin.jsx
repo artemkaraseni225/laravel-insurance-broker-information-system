@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import api from '../../services/api';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const emptyForm = {
   insurance_type_id: '',
@@ -41,7 +44,31 @@ function TariffsAdmin() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(loadAll, []);
+  useEffect(() => {
+    let active = true;
+
+    Promise.all([
+      api.get('/admin/tariffs'),
+      api.get('/admin/insurance-types'),
+      api.get('/admin/insurance-companies'),
+    ])
+      .then(([tariffsRes, typesRes, companiesRes]) => {
+        if (!active) return;
+        setTariffs(tariffsRes.data.tariffs);
+        setTypes(typesRes.data.insurance_types);
+        setCompanies(companiesRes.data.companies);
+      })
+      .catch(() => {
+        if (active) setError('Не удалось загрузить данные');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -105,13 +132,13 @@ function TariffsAdmin() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-6">
-      <Card>
-        <CardHeader>
+    <div className="w-full space-y-6">
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-border/70 px-6 py-5">
           <CardTitle>{editingId ? 'Редактировать тариф' : 'Новый тариф'}</CardTitle>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-3">
+          <CardContent className="grid gap-4 px-6 sm:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-2">
               <Label>Тип страхования</Label>
               <Select
@@ -173,7 +200,7 @@ function TariffsAdmin() {
             <div className="space-y-2">
               <Label>Статус</Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                <SelectTrigger className="w-50">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -183,9 +210,9 @@ function TariffsAdmin() {
               </Select>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive sm:col-span-2 xl:col-span-3">{error}</p>}
           </CardContent>
-          <CardContent className="flex gap-2 pt-0">
+          <CardContent className="flex flex-wrap gap-2 px-6 pt-0">
             <Button type="submit" disabled={submitting}>
               {editingId ? 'Сохранить' : 'Создать'}
             </Button>
@@ -198,51 +225,44 @@ function TariffsAdmin() {
         </form>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="border-b border-border/70 px-5 py-4">
           <CardTitle>Тарифы</CardTitle>
         </CardHeader>
-        <CardContent>
-          {loading && <p className="text-muted-foreground">Загрузка...</p>}
+        <CardContent className="min-w-0 !px-0">
+          {loading && <p className="px-5 pb-5 text-muted-foreground">Загрузка...</p>}
           {!loading && tariffs.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-            <table className="crm-table w-full">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="py-2">Тип</th>
-                  <th className="py-2">Компания</th>
-                  <th className="py-2">Название</th>
-                  <th className="py-2">Цена</th>
-                  <th className="py-2">Статус</th>
-                  <th className="py-2">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="min-w-[48rem] text-sm">
+              <TableHeader>
+                <TableRow className="border-border/70 bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="min-w-52 px-5">Тип</TableHead>
+                  <TableHead className="min-w-44 px-4">Компания</TableHead>
+                  <TableHead className="min-w-44 px-4">Название</TableHead>
+                  <TableHead className="px-4">Цена</TableHead>
+                  <TableHead className="px-4">Статус</TableHead>
+                  <TableHead className="px-5 text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {tariffs.map((tariff) => (
-                  <tr key={tariff.id} className="border-b last:border-0">
-                    <td className="py-2">{tariff.insurance_type?.name}</td>
-                    <td className="py-2">{tariff.company?.name ?? '—'}</td>
-                    <td className="py-2">{tariff.name}</td>
-                    <td className="py-2">{tariff.base_price}</td>
-                    <td className="py-2">{tariff.status === 'active' ? 'Активен' : 'Неактивен'}</td>
-                    <td className="py-2 flex gap-2">
-                      <button type="button" className="underline" onClick={() => startEdit(tariff)}>
-                        Изменить
-                      </button>
-                      <button
-                        type="button"
-                        className="text-destructive underline"
-                        onClick={() => handleDelete(tariff.id)}
-                      >
-                        Удалить
-                      </button>
-                    </td>
-                  </tr>
+                  <TableRow key={tariff.id}>
+                    <TableCell className="px-5 py-3 font-medium"><span className="block whitespace-normal break-words">{tariff.insurance_type?.name ?? '—'}</span></TableCell>
+                    <TableCell className="px-4 py-3"><span className="block whitespace-normal break-words">{tariff.company?.name ?? '—'}</span></TableCell>
+                    <TableCell className="px-4 py-3"><span className="block whitespace-normal break-words">{tariff.name}</span></TableCell>
+                    <TableCell className="px-4 py-3 font-semibold tabular-nums">{tariff.base_price}</TableCell>
+                    <TableCell className="px-4 py-3"><Badge variant={tariff.status === 'active' ? 'secondary' : 'outline'}>{tariff.status === 'active' ? 'Активен' : 'Неактивен'}</Badge></TableCell>
+                    <TableCell className="px-5 py-3">
+                      <div className="flex min-w-40 flex-wrap justify-end gap-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => startEdit(tariff)} aria-label={`Изменить тариф ${tariff.name}`}><Pencil />Изменить</Button>
+                        <Button type="button" size="sm" variant="destructive" onClick={() => handleDelete(tariff.id)} aria-label={`Удалить тариф ${tariff.name}`}><Trash2 />Удалить</Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-            </div>
+              </TableBody>
+            </Table>
           )}
+          {!loading && !error && tariffs.length === 0 && <p className="empty-state mx-5 mb-5">Тарифов пока нет.</p>}
         </CardContent>
       </Card>
     </div>

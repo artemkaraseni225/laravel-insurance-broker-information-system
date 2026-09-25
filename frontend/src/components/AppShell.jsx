@@ -32,7 +32,7 @@ const ROLE_LABELS = {
   admin: 'Admin',
 };
 
-function AppShell({ brand, home, links, fillWorkspace = false }) {
+function AppShell({ brand, home, links, fillWorkspace = false, contentClassName }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -147,7 +147,7 @@ function AppShell({ brand, home, links, fillWorkspace = false }) {
           </nav>
         </header>
         <main className={fillWorkspace ? 'flex min-h-[calc(100vh-4rem)] min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 md:min-h-0 lg:px-8 lg:py-8' : 'min-h-[calc(100vh-4rem)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8'}>
-          <div className={fillWorkspace ? 'flex min-h-0 w-full flex-1 flex-col' : 'mx-auto w-full max-w-7xl'}>
+          <div className={fillWorkspace ? 'flex min-h-0 w-full flex-1 flex-col' : contentClassName ?? 'mx-auto w-full max-w-7xl'}>
             <Outlet />
           </div>
         </main>
