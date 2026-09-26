@@ -55,7 +55,15 @@ class UserController extends Controller
     {
         abort_if($user->role?->name === 'admin', 403, 'Администратора нельзя заблокировать.');
 
-        $user->update(['status' => $request->validated('status')]);
+        $status = $request->validated('status');
+
+        DB::transaction(function () use ($user, $status) {
+            $user->update(['status' => $status]);
+
+            if ($status === 'blocked') {
+                $user->tokens()->delete();
+            }
+        });
 
         return response()->json([
             'user' => $user->fresh(['role']),
