@@ -19,7 +19,8 @@ class ApplicationPolicy
 
     public function uploadDocument(User $user, Application $application): bool
     {
-        return $this->owns($user, $application);
+        return ($user->customer && $application->customer_id === $user->customer->id)
+            || ($user->broker && $application->broker_id === $user->broker->id);
     }
 
     public function pay(User $user, Application $application): bool
