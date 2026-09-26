@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
             InsuranceCompanySeeder::class,
             InsuranceTypeSeeder::class,
             TariffSeeder::class,
-            AdminUserSeeder::class,
         ]);
     }
 }
