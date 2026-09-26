@@ -85,7 +85,7 @@ class BrokerApplicationController extends Controller
         Gate::authorize('is-broker');
 
         $broker = $request->user()->broker;
-        abort_unless($application->broker_id === null || $application->broker_id === $broker->id, 403);
+        abort_unless($application->broker_id === $broker->id, 403);
         abort_unless(in_array($application->status?->value, [
             ApplicationStatus::New->value,
             ApplicationStatus::InReview->value,
