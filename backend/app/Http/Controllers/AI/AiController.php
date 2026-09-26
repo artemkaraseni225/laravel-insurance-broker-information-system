@@ -10,6 +10,7 @@ use App\Models\Application;
 use Illuminate\Http\JsonResponse;
 use App\Services\AI\AiDataExtractionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 
 
@@ -19,6 +20,8 @@ class AIController extends Controller
 
     public function riskAnalysis(Application $application, AiRiskAnalysisService $aiRiskAnalysisService)
 {
+    Gate::authorize('analyze', $application);
+
     $result = $aiRiskAnalysisService->analyze($application);
 
     return response()->json([

@@ -12,6 +12,11 @@ class ApplicationPolicy
         return $this->owns($user, $application) || $user->role?->name === 'admin';
     }
 
+    public function analyze(User $user, Application $application): bool
+    {
+        return $user->broker && $application->broker_id === $user->broker->id;
+    }
+
     public function uploadDocument(User $user, Application $application): bool
     {
         return $this->owns($user, $application);
