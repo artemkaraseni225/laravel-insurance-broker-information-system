@@ -119,15 +119,12 @@ function Calculator() {
   // AuthContext, ProtectedRoute тоже сам стучится на /me при каждом
   // монтировании, делаем так же для единообразия
   const [currentUser, setCurrentUser] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(() => !localStorage.getItem('auth_token'));
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
 
-    if (!token) {
-      setAuthChecked(true);
-      return;
-    }
+    if (!token) return;
 
     api
       .get('/me')
@@ -169,7 +166,9 @@ function Calculator() {
   const [uploadErrors, setUploadErrors] = useState([]);
   const [customerApplications, setCustomerApplications] = useState([]);
   const [customerPolicies, setCustomerPolicies] = useState([]);
-  const [customerDataLoading, setCustomerDataLoading] = useState(false);
+  const [customerDataLoadedFor, setCustomerDataLoadedFor] = useState(null);
+  const customerDataLoading = currentUser?.role?.name === 'customer'
+    && customerDataLoadedFor !== currentUser;
 
   useEffect(() => {
     api
@@ -183,7 +182,6 @@ function Calculator() {
     if (currentUser?.role?.name !== 'customer') return;
 
     let active = true;
-    setCustomerDataLoading(true);
 
     Promise.all([api.get('/applications'), api.get('/policies')])
       .then(([applicationsResponse, policiesResponse]) => {
@@ -192,7 +190,7 @@ function Calculator() {
         setCustomerPolicies(policiesResponse.data.policies ?? []);
       })
       .finally(() => {
-        if (active) setCustomerDataLoading(false);
+        if (active) setCustomerDataLoadedFor(currentUser);
       });
 
     return () => {
