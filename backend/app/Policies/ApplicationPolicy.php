@@ -17,6 +17,11 @@ class ApplicationPolicy
         return $this->owns($user, $application);
     }
 
+    public function pay(User $user, Application $application): bool
+    {
+        return $user->customer && $application->customer_id === $user->customer->id;
+    }
+
     private function owns(User $user, Application $application): bool
     {
         if ($user->customer && $application->customer_id === $user->customer->id) {
@@ -24,9 +29,7 @@ class ApplicationPolicy
         }
 
         if ($user->broker) {
-            // Брокер видит СВОИ назначенные заявки И общий пул
-            // неназначенных (broker_id ещё null) — назначение
-            // происходит в момент решения (approve/reject), не раньше
+    
             return $application->broker_id === $user->broker->id || $application->broker_id === null;
         }
 

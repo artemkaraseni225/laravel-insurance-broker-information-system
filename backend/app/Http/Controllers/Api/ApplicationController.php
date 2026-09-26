@@ -49,7 +49,7 @@ class ApplicationController extends Controller
 
     public function pay(Request $request, Application $application): JsonResponse
     {
-        Gate::authorize('view', $application);
+        Gate::authorize('pay', $application);
 
         if ($application->status !== ApplicationStatus::Approved) {
             throw ValidationException::withMessages([
