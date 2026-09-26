@@ -16,7 +16,7 @@ class CalculateInsuranceRequest extends FormRequest
     {
         return [
             'insurance_type' => ['required', Rule::in(['auto', 'property', 'health'])],
-            'tariff_id' => ['required', 'integer', 'exists:tariffs,id'],
+            'tariff_id' => ['required', 'integer', Rule::exists('tariffs', 'id')->where('status', 'active')],
             'term_months' => ['required', 'integer', 'min:1', 'max:60'],
             'insurance_sum' => [
                 'required_unless:insurance_type,health',
