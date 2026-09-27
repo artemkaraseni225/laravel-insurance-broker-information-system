@@ -15,6 +15,7 @@ import {
   Users,
 } from 'lucide-react';
 import api from '../services/api';
+import ThemeToggle from './ThemeToggle';
 
 const iconMap = {
   dashboard: LayoutDashboard,
@@ -122,7 +123,8 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
           </div>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-6">{links.map((link) => renderNavLink(link))}</nav>
-        <div className="border-t border-sidebar-border p-3">
+        <div className="space-y-2 border-t border-sidebar-border p-3">
+          <ThemeToggle />
           <button
             type="button"
             onClick={handleLogout}
@@ -147,14 +149,17 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
                 <span className="block text-[10px] font-normal text-muted-foreground">{roleLabel}</span>
               </span>
             </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              aria-label="Выйти"
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              <LogOut className="size-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle compact />
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Выйти"
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <LogOut className="size-4" />
+              </button>
+            </div>
           </div>
           <nav className="flex gap-1 overflow-x-auto border-t border-border/60 px-3 py-2">
             {links.map((link) => renderNavLink(link, true))}

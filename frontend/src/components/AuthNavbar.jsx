@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 function AuthNavbar({ activePage }) {
   const linkClassName = (page) => (
@@ -29,6 +30,7 @@ function AuthNavbar({ activePage }) {
           <Link to="/register" className={linkClassName('register')}>
             Регистрация
           </Link>
+          <ThemeToggle compact />
         </div>
       </nav>
     </header>
