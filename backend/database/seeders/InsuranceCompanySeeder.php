@@ -7,8 +7,7 @@ use Illuminate\Database\Seeder;
 
 class InsuranceCompanySeeder extends Seeder
 {
-    // Названия вымышленные — намеренно не используем реальные
-    // страховые компании с придуманными ценами.
+
     public function run(): void
     {
         $companies = [
