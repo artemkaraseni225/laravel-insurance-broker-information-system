@@ -7,8 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DocumentResource extends JsonResource
 {
-    // file_path сюда намеренно не выводим — прямой ссылки на скачивание
-    // пока нет (появится позже, отдельным authorized-эндпоинтом)
     public function toArray(Request $request): array
     {
         return [

@@ -42,10 +42,6 @@ class AiRiskAnalysisService
             $data['customer_age'] = $application->customer->date_of_birth->age;
         }
 
-        /*
-         * Не передаём AI персональные идентификаторы,
-         * которые не нужны для анализа риска.
-         */
         $piiKeys = [
             'idnp',
             'vin',

@@ -15,8 +15,7 @@ class InsuranceTypeResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             // Поля формы для этого типа НЕ приходят с бэка — они
-            // захардкожены во фронтенде (см. решение про
-            // insurance_type_fields). Здесь только справочные данные.
+            // захардкожены во фронтенде. Здесь только справочные данные.
             'tariffs' => TariffResource::collection($this->whenLoaded('tariffs')),
         ];
     }

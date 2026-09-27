@@ -6,7 +6,6 @@ use App\Models\User;
 
 class UserPolicy
 {
-    // Список всех пользователей — только админ (пригодится для админ-панели, неделя 13)
     public function viewAny(User $user): bool
     {
         return $user->role?->name === 'admin';

@@ -14,7 +14,7 @@ class ApplicationObserver
 
     public function updated(Application $application): void
     {
-        // Полис создаём ровно один раз — когда статус реально
+        // Полис создаётся ровно один раз — когда статус реально
         // ИЗМЕНИЛСЯ на approved (не просто равен approved — иначе
         // сработало бы на каждое сохранение уже одобренной заявки)
         if (
