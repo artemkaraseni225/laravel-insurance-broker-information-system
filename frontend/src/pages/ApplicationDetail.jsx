@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, FileText, History, ShieldCheck, Sparkles } from 'lucide-react';
 import api from '../services/api';
 import ClientDataVerification from '../components/ClientDataVerification';
@@ -73,6 +73,10 @@ const RISK_LEVEL_STYLES = {
 
 function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = false, showClientDataVerification = false }) {
   const { id } = useParams();
+  const location = useLocation();
+  const returnPath = backPath === '/broker/applications'
+    ? `${backPath}${location.search}`
+    : backPath;
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -160,7 +164,7 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
       <div className="mx-auto flex min-h-72 w-full max-w-xl items-center px-4 py-10">
         <div className="w-full rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center shadow-sm">
           <p className="text-destructive">{error}</p>
-          <Link to={backPath} className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-800">
+          <Link to={returnPath} className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-800">
             <ArrowLeft className="size-4" />
             Назад к списку
           </Link>
@@ -211,7 +215,7 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <Link to={backPath} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-800">
+      <Link to={returnPath} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-800">
         <ArrowLeft className="size-4" />
         Назад к списку
       </Link>

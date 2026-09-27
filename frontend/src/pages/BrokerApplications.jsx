@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import api from '../services/api';
 import { Badge } from '@/components/ui/badge';
@@ -41,12 +41,15 @@ const FILTERS = [
 const PAGE_SIZE = 6;
 
 function BrokerApplications() {
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [applications, setApplications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const pageFromUrl = Number(searchParams.get('page'));
+  const currentPage = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
 
   useEffect(() => {
     api
@@ -88,6 +91,14 @@ function BrokerApplications() {
     (activePage - 1) * PAGE_SIZE,
     activePage * PAGE_SIZE,
   );
+
+  function changePage(page) {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set('page', String(page));
+    setSearchParams(nextSearchParams);
+  }
+
+  const applicationDetailPath = (id) => `${location.pathname}/${id}${location.search}`;
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
@@ -157,7 +168,7 @@ function BrokerApplications() {
                   return (
                     <TableRow key={application.id} className="border-border/60 transition-colors hover:bg-teal-50/50">
                       <TableCell className="px-2 py-2.5">
-                        <Link to={`/broker/applications/${application.id}`} className="inline-flex h-8 items-center rounded-lg bg-teal-50 px-2.5 text-xs font-semibold tabular-nums text-teal-700 ring-1 ring-inset ring-teal-200 transition-colors hover:bg-teal-100 hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+                        <Link to={applicationDetailPath(application.id)} className="inline-flex h-8 items-center rounded-lg bg-teal-50 px-2.5 text-xs font-semibold tabular-nums text-teal-700 ring-1 ring-inset ring-teal-200 transition-colors hover:bg-teal-100 hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
                           #{application.id}
                         </Link>
                       </TableCell>
@@ -226,7 +237,7 @@ function BrokerApplications() {
                     <div key={application.id} className="rounded-xl border border-border/70 bg-card p-4 shadow-xs">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <Link to={`/broker/applications/${application.id}`} className="inline-flex h-8 items-center rounded-lg bg-teal-50 px-2.5 text-xs font-semibold tabular-nums text-teal-700 ring-1 ring-inset ring-teal-200 transition-colors hover:bg-teal-100 hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
+                          <Link to={applicationDetailPath(application.id)} className="inline-flex h-8 items-center rounded-lg bg-teal-50 px-2.5 text-xs font-semibold tabular-nums text-teal-700 ring-1 ring-inset ring-teal-200 transition-colors hover:bg-teal-100 hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500">
                             #{application.id}
                           </Link>
                           <p className="mt-1 truncate text-sm font-medium" title={application.customer?.name ?? 'Без имени'}>{application.customer?.name ?? 'Без имени'}</p>
@@ -285,10 +296,10 @@ function BrokerApplications() {
             <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border/70 px-4 py-3">
               <span className="text-xs text-muted-foreground">Страница {activePage} из {totalPages}</span>
               <div className="flex gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => setCurrentPage(() => Math.max(1, activePage - 1))} disabled={activePage === 1} className="h-8 rounded-lg">
+                <Button type="button" size="sm" variant="outline" onClick={() => changePage(Math.max(1, activePage - 1))} disabled={activePage === 1} className="h-8 rounded-lg">
                   Назад
                 </Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => setCurrentPage(() => Math.min(totalPages, activePage + 1))} disabled={activePage === totalPages} className="h-8 rounded-lg">
+                <Button type="button" size="sm" variant="outline" onClick={() => changePage(Math.min(totalPages, activePage + 1))} disabled={activePage === totalPages} className="h-8 rounded-lg">
                   Вперёд
                 </Button>
               </div>
