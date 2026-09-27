@@ -74,8 +74,8 @@ function BrokerDashboard() {
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <Card className="!flex min-h-0 flex-1 !gap-0 overflow-hidden rounded-2xl !py-0 shadow-sm">
-        <CardHeader className="!flex shrink-0 flex-col gap-5 border-b border-border/70 bg-gradient-to-r from-teal-50/80 to-background px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="flex! min-h-0 flex-1 gap-0! overflow-hidden rounded-2xl py-0! shadow-sm">
+        <CardHeader className="app-hero flex! shrink-0 flex-col gap-5 border-b border-border/70 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 shadow-sm">
               <Inbox className="size-5" />
@@ -87,7 +87,7 @@ function BrokerDashboard() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="!flex min-h-0 flex-1 flex-col !px-0">
+        <CardContent className="flex! min-h-0 flex-1 flex-col px-0!">
           {loading && <p className="px-6 py-10 text-center text-muted-foreground">Загрузка заявок...</p>}
           {error && <p className="m-6 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p>}
 
@@ -147,7 +147,7 @@ function BrokerDashboard() {
                             size="sm"
                             onClick={() => claimApplication(application.id)}
                             disabled={isUpdating}
-                            className="h-7 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-2 text-xs text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
+                            className="h-7 rounded-lg bg-linear-to-r from-teal-500 to-teal-600 px-2 text-xs text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
                           >
                             Взять в работу
                           </Button>
@@ -197,7 +197,7 @@ function BrokerDashboard() {
                         size="sm"
                         onClick={() => claimApplication(application.id)}
                         disabled={isUpdating}
-                        className="mt-3 h-8 w-full rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 text-xs text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
+                        className="mt-3 h-8 w-full rounded-lg bg-linear-to-r from-teal-500 to-teal-600 text-xs text-white hover:from-teal-600 hover:to-teal-700 focus-visible:ring-teal-500"
                       >
                         Взять в работу
                       </Button>

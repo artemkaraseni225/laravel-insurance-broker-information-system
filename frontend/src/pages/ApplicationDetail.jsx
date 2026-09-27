@@ -221,7 +221,7 @@ function ApplicationDetail({ backPath = '/my-applications', showRiskAnalysis = f
       </Link>
 
       <Card className="!gap-0 overflow-hidden rounded-2xl !py-0 shadow-sm">
-        <CardHeader className="!flex flex-col gap-5 border-b border-border/70 bg-gradient-to-r from-teal-50/80 to-background px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+        <CardHeader className="app-hero !flex flex-col gap-5 border-b border-border/70 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 shadow-sm">
               <ShieldCheck className="size-5" />

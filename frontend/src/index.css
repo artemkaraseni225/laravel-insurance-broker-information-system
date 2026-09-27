@@ -137,6 +137,14 @@
 }
 
 @layer components {
+  .app-hero {
+    background-color: #F7F9FA;
+  }
+
+  .dark .app-hero {
+    background-color: #101817;
+  }
+
   .page-shell {
     @apply mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
   }

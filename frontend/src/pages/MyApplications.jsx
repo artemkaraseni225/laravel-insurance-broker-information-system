@@ -49,7 +49,7 @@ function MyApplications() {
   return (
     <div className="mx-auto w-full max-w-7xl">
       <Card className="!gap-0 overflow-hidden rounded-2xl !py-0 shadow-sm">
-        <CardHeader className="flex flex-col gap-5 border-b border-border/70 bg-gradient-to-r from-teal-50/80 to-background px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader className="app-hero flex flex-col gap-5 border-b border-border/70 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 shadow-sm">
               <FileText className="size-5" />
