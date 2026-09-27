@@ -24,6 +24,8 @@ class ApplicationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        Gate::authorize('is-customer');
+
         $customer = $request->user()->customer;
 
         $applications = $customer->applications()

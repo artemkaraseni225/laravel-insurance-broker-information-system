@@ -22,7 +22,7 @@ class PolicyService
 
     private function insuranceSum(Application $application): float
     {
-        return data_get($application->insurance_data, 'insurance_type') === 'health'
+        return $application->insuranceType?->code === 'health'
             ? 250000
             : (float) data_get($application->insurance_data, 'insurance_sum');
     }

@@ -19,7 +19,7 @@ class BrokerApplicationController extends Controller
 
         $query = Application::query()
             ->whereNull('broker_id')
-            ->where('status', '!=', ApplicationStatus::Cancelled->value)
+            ->where('status', ApplicationStatus::New->value)
             ->with(['customer.user', 'insuranceType', 'tariff.company']);
 
         if ($status = $request->query('status')) {
@@ -53,12 +53,17 @@ class BrokerApplicationController extends Controller
         Gate::authorize('is-broker');
 
         $broker = $request->user()->broker;
-        abort_unless($application->broker_id === null, 422, 'Заявка уже взята в работу.');
+        abort_unless(
+            $application->broker_id === null && $application->status === ApplicationStatus::New,
+            422,
+            'Заявку можно взять в работу только из пула новых заявок.'
+        );
 
         $fromStatus = $application->status?->value;
         $claimed = Application::query()
             ->whereKey($application->id)
             ->whereNull('broker_id')
+            ->where('status', ApplicationStatus::New->value)
             ->update([
                 'broker_id' => $broker->id,
                 'status' => ApplicationStatus::InReview,

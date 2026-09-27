@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AI\AIController;
+use App\Http\Controllers\AI\AiController;
 use App\Http\Controllers\Api\Admin\InsuranceTypeController as AdminInsuranceTypeController;
 use App\Http\Controllers\Api\Admin\TariffController as AdminTariffController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
@@ -16,8 +16,8 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/calculator/quote', [CalculatorController::class, 'quote']);
 Route::get('/insurance-types', [InsuranceTypeController::class, 'index']);
 
@@ -50,8 +50,8 @@ Route::middleware(['auth:sanctum', 'active-user'])->group(function () {
         Route::get('/broker/my-applications', [BrokerApplicationController::class, 'mine']);
         Route::post('/broker/applications/{application}/claim', [BrokerApplicationController::class, 'claim']);
         Route::patch('/broker/applications/{application}/status', [BrokerApplicationController::class, 'updateStatus']);
-        Route::middleware(['throttle:10,1'])->get('/applications/{application}/risk-analysis',[AIController::class, 'riskAnalysis']);
-        Route::post('/applications/parse-text',[AIController::class, 'parseText']);
+        Route::middleware(['throttle:10,1'])->get('/applications/{application}/risk-analysis', [AiController::class, 'riskAnalysis']);
+        Route::post('/applications/parse-text', [AiController::class, 'parseText'])->middleware('throttle:10,1');
     });
 
     Route::middleware('role:admin')->prefix('admin')->group(function () {
@@ -70,5 +70,3 @@ Route::middleware(['auth:sanctum', 'active-user'])->group(function () {
         });
     });
 });
-
-

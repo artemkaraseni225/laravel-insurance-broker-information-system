@@ -264,7 +264,9 @@ PROMPT;
 
         if (
             !isset($result['factors']) ||
-            !is_array($result['factors'])
+            !is_array($result['factors']) ||
+            !array_is_list($result['factors']) ||
+            array_filter($result['factors'], fn ($factor) => !is_string($factor)) !== []
         ) {
             throw new RuntimeException(
                 'AI response does not contain valid factors.'
@@ -273,7 +275,8 @@ PROMPT;
 
         if (
             !isset($result['recommendation']) ||
-            !is_string($result['recommendation'])
+            !is_string($result['recommendation']) ||
+            trim($result['recommendation']) === ''
         ) {
             throw new RuntimeException(
                 'AI response does not contain a valid recommendation.'
@@ -305,4 +308,3 @@ PROMPT;
         ];
     }
 }
-

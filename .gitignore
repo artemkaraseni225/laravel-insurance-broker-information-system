@@ -10,6 +10,7 @@
 Thumbs.db
 
 # Backend 
+/vendor/
 /backend/vendor/
 /backend/.env
 /backend/.env.*

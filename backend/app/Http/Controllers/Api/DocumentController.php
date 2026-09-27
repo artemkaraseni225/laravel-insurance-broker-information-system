@@ -22,7 +22,8 @@ class DocumentController extends Controller
         $file = $request->file('document');
 
         $path = $file->store(
-            "applications/{$application->id}/documents"
+            "applications/{$application->id}/documents",
+            'local'
         );
 
         $document = Document::create([

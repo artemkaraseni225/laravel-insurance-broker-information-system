@@ -94,6 +94,7 @@ http://127.0.0.1:8000
 ```bash
 cd frontend
 npm install
+copy .env.example .env
 npm run dev
 ```
 
@@ -128,7 +129,7 @@ GROQ_API_URL=your_api_url
 В текущей версии frontend использует API URL, указанный в:
 
 ```text
-frontend/src/services/api.js
+frontend/.env
 ```
 
 ## База данных

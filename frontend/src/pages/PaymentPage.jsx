@@ -34,6 +34,9 @@ export default function PaymentPage() {
                     currency: 'MDL',
                     status: application.status,
                     policyStatus: application.policy?.status ?? 'pending_payment',
+                    paymentAvailable: application.status === 'approved' && application.policy?.status === 'pending_payment',
+                    startDate: application.policy?.start_date ?? '—',
+                    endDate: application.policy?.end_date ?? '—',
                 });
             })
             .catch(() => setPolicyError('Не удалось загрузить данные полиса'))
@@ -104,6 +107,11 @@ export default function PaymentPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (!policy?.paymentAvailable) {
+            setErrors({ general: 'Оплата недоступна для этой заявки.' });
+            return;
+        }
 
         if (!validate()) {
             return;
@@ -208,6 +216,21 @@ export default function PaymentPage() {
                         Оплачено
                     </button>
                 </div>
+            </div>
+        );
+    }
+
+    if (!policy.paymentAvailable) {
+        const message = policy.policyStatus === 'paid'
+            ? 'Этот полис уже оплачен.'
+            : 'Оплатить можно только одобренную заявку с полисом, ожидающим оплаты.';
+
+        return (
+            <div className="page-shell text-center">
+                <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-destructive">{message}</p>
+                <button type="button" onClick={() => navigate('/my-applications')} className="mt-4 text-sm font-medium text-primary underline underline-offset-4">
+                    Назад к заявкам
+                </button>
             </div>
         );
     }
@@ -387,7 +410,7 @@ export default function PaymentPage() {
 
                                 <button
                                     type="submit"
-                                    disabled={isProcessing || policy.policyStatus === 'paid'}
+                                    disabled={isProcessing}
                                     className={`w-full rounded-xl py-3.5 font-medium text-white transition ${
                                         policy.policyStatus === 'paid'
                                             ? 'bg-primary'

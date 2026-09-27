@@ -9,7 +9,7 @@ class ApplicationPolicy
 {
     public function view(User $user, Application $application): bool
     {
-        return $this->owns($user, $application) || $user->role?->name === 'admin';
+        return $this->owns($user, $application);
     }
 
     public function analyze(User $user, Application $application): bool
@@ -35,8 +35,11 @@ class ApplicationPolicy
         }
 
         if ($user->broker) {
-    
-            return $application->broker_id === $user->broker->id || $application->broker_id === null;
+            return $application->broker_id === $user->broker->id
+                || (
+                    $application->broker_id === null
+                    && $application->status === \App\Enums\ApplicationStatus::New
+                );
         }
 
         return false;

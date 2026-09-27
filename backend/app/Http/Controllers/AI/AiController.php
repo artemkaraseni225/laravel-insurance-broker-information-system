@@ -15,19 +15,25 @@ use Illuminate\Support\Facades\Gate;
 
 
 
-class AIController extends Controller
+class AiController extends Controller
 {
 
     public function riskAnalysis(Application $application, AiRiskAnalysisService $aiRiskAnalysisService)
-{
-    Gate::authorize('analyze', $application);
+    {
+        Gate::authorize('analyze', $application);
 
-    $result = $aiRiskAnalysisService->analyze($application);
+        try {
+            $result = $aiRiskAnalysisService->analyze($application);
+        } catch (\Throwable) {
+            return response()->json([
+                'message' => 'AI-анализ временно недоступен. Попробуйте позже.',
+            ], 503);
+        }
 
-    return response()->json([
-        'data' => $result,
-    ]);
-}
+        return response()->json([
+            'data' => $result,
+        ]);
+    }
     // Контроллер не слишком сложный, поэтому пока валидация и обработка ошибок делается прямо здесь.
 
     public function parseText(
