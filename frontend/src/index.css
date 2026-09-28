@@ -237,3 +237,81 @@
   .dark .hover\:bg-teal-700:hover { background-color: #25CDBA; }
   .dark .hover\:text-teal-800:hover { color: #65D7CA; }
 }
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  html:has([data-policy-print-document]),
+  body:has([data-policy-print-document]) {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body:has([data-policy-print-document]) [data-app-shell-sidebar],
+  body:has([data-policy-print-document]) [data-app-shell-header],
+  body:has([data-policy-print-document]) [data-policy-print-page-header],
+  body:has([data-policy-print-document]) [data-policy-print-document-viewer],
+  body:has([data-policy-print-document]) [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  body:has([data-policy-print-document]) #root,
+  body:has([data-policy-print-document]) [data-app-shell],
+  body:has([data-policy-print-document]) [data-app-shell-workspace],
+  body:has([data-policy-print-document]) [data-app-shell-main],
+  body:has([data-policy-print-document]) [data-app-shell-content],
+  body:has([data-policy-print-document]) [data-policy-print-root],
+  body:has([data-policy-print-document]) [data-policy-print-root] > div {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body:has([data-policy-print-document]) [data-policy-print-document] {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  body:has([data-policy-print-document]) [data-policy-print-document],
+  body:has([data-policy-print-document]) [data-policy-print-document] * {
+    max-height: none !important;
+    overflow: visible !important;
+    color: #111 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body:has([data-policy-print-document]) [data-policy-print-document] .rounded-lg,
+  body:has([data-policy-print-document]) [data-policy-print-document] .rounded-xl {
+    border-radius: 0 !important;
+  }
+
+  body:has([data-policy-print-document]) [data-policy-print-document] button {
+    display: none !important;
+  }
+
+  body:has([data-policy-print-document]) [data-policy-print-document] section,
+  body:has([data-policy-print-document]) [data-policy-print-document] .rounded-lg {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

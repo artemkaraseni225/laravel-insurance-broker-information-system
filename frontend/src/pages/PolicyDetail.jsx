@@ -322,11 +322,11 @@ export default function PolicyDetail() {
     const status = statusConfig[policy.status] ?? statusConfig.paid;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gray-50 p-6" data-policy-print-root>
             <div className="mx-auto max-w-6xl">
 
                 {/* Header */}
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-6 flex items-center justify-between" data-policy-print-page-header>
                     <div>
                         <button
                             onClick={() => navigate("/my-policies")}
@@ -362,7 +362,7 @@ export default function PolicyDetail() {
                 </div>
 
                 {/* Main policy card */}
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm" data-policy-print-document>
 
                     {/* Policy header */}
                     <div className="border-b border-gray-200 bg-gray-50 px-6 py-5">
@@ -701,7 +701,7 @@ function DocumentViewer({ viewer, onSelect, onClose }) {
     const isImage = selectedDocument?.type?.startsWith('image/');
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" data-policy-print-document-viewer>
             <div className="flex h-[min(760px,calc(100vh-2rem))] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl lg:flex-row">
                 <aside className="flex w-full shrink-0 flex-col border-b border-gray-200 bg-gray-50 lg:w-72 lg:border-b-0 lg:border-r">
                     <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">

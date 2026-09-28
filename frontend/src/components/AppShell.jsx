@@ -98,8 +98,8 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar md:flex">
+    <div className="min-h-screen bg-background" data-app-shell>
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar md:flex" data-app-shell-sidebar>
         <div className="border-b border-sidebar-border px-6 py-5">
           <Link to={home} className="flex items-center gap-3 text-sm font-semibold tracking-tight text-foreground">
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
@@ -136,8 +136,8 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
         </div>
       </aside>
 
-      <div className={fillWorkspace ? 'flex min-h-screen flex-col md:h-screen md:pl-64' : 'md:pl-64'}>
-        <header className="sticky top-0 z-10 border-b border-border/80 bg-background/95 backdrop-blur md:hidden">
+      <div className={fillWorkspace ? 'flex min-h-screen flex-col md:h-screen md:pl-64' : 'md:pl-64'} data-app-shell-workspace>
+        <header className="sticky top-0 z-10 border-b border-border/80 bg-background/95 backdrop-blur md:hidden" data-app-shell-header>
           <div className="flex h-16 items-center justify-between px-4">
             <Link to={home} className="flex min-w-0 items-center gap-2 text-sm font-semibold">
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -165,8 +165,8 @@ function AppShell({ brand, home, links, fillWorkspace = false, contentClassName 
             {links.map((link) => renderNavLink(link, true))}
           </nav>
         </header>
-        <main className={fillWorkspace ? 'flex min-h-[calc(100vh-4rem)] min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 md:min-h-0 lg:px-8 lg:py-8' : 'min-h-[calc(100vh-4rem)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8'}>
-          <div className={fillWorkspace ? 'flex min-h-0 w-full flex-1 flex-col' : contentClassName ?? 'mx-auto w-full max-w-7xl'}>
+        <main className={fillWorkspace ? 'flex min-h-[calc(100vh-4rem)] min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 md:min-h-0 lg:px-8 lg:py-8' : 'min-h-[calc(100vh-4rem)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8'} data-app-shell-main>
+          <div className={fillWorkspace ? 'flex min-h-0 w-full flex-1 flex-col' : contentClassName ?? 'mx-auto w-full max-w-7xl'} data-app-shell-content>
             <Outlet />
           </div>
         </main>
